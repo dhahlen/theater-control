@@ -95,6 +95,19 @@ async def get_state(request: Request) -> dict[str, Any]:
     return request.app.state.store.snapshot()
 
 
+@router.get("/api/ui-config")
+async def ui_config(request: Request) -> dict[str, Any]:
+    """Non-secret configuration the front end needs to render controls."""
+
+    config = request.app.state.config
+    manager = request.app.state.manager
+    return {
+        "sources": list(config.sources.keys()),
+        "default_source": config.default_source,
+        "devices": list(manager.adapters.keys()),
+    }
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket) -> None:
     await websocket.accept()

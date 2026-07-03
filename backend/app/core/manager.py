@@ -86,6 +86,7 @@ class DeviceManager:
                 base_url=cfg.plex.base_url,
                 token=cfg.secrets.plex_token or "",
                 default_player_id=cfg.plex.default_player_id,
+                web_url=cfg.plex.web_url,
             )
 
     # -- accessors --------------------------------------------------------

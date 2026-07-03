@@ -46,7 +46,7 @@ hue:
   scenes:
     movie: "REPLACE_WITH_SCENE_ID"
     bright: "REPLACE_WITH_SCENE_ID"
-    off: "REPLACE_WITH_SCENE_ID"
+    "off": "REPLACE_WITH_SCENE_ID"   # quote "off": bare off is YAML boolean false
   # app key provided via HUE_APP_KEY in .env
 
 # ---- Source-specific behavior for Theater On ----

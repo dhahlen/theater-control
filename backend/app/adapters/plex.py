@@ -27,12 +27,14 @@ class PlexAdapter(DeviceAdapter):
         base_url: str,
         token: str,
         default_player_id: str = "",
+        web_url: str = "",
         client: Any | None = None,
     ) -> None:
         self.device_id = device_id
         self._base_url = base_url.rstrip("/")
         self._token = token
         self._default_player_id = default_player_id
+        self._web_url = web_url or f"{self._base_url}/web"
         self._client = client
 
     def _http(self) -> Any:
@@ -67,7 +69,11 @@ class PlexAdapter(DeviceAdapter):
             data = resp.json()
         except Exception as exc:
             log.debug("plex get_status failed: %s", exc)
-            return DeviceStatus(device_id=self.device_id, reachable=Reachability.OFFLINE)
+            return DeviceStatus(
+                device_id=self.device_id,
+                reachable=Reachability.OFFLINE,
+                extra={"web_url": self._web_url},
+            )
 
         container = data.get("MediaContainer", {})
         sessions = container.get("Metadata", []) or []
@@ -79,6 +85,7 @@ class PlexAdapter(DeviceAdapter):
             extra={
                 "session_count": container.get("size", len(sessions)),
                 "now_playing": now_playing,
+                "web_url": self._web_url,
             },
         )
 
