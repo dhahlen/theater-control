@@ -1,0 +1,7 @@
+fastapi>=0.111
+uvicorn[standard]>=0.30
+pydantic>=2.7
+PyYAML>=6.0
+# Optional, permissively licensed device references (use directly or as protocol refs):
+# jvc-projector-remote  (see docs/devices/jvc-nz900.md)
+# py-madvr              (see docs/devices/madvr-envy.md)

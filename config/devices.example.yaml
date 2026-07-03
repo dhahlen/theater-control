@@ -1,0 +1,89 @@
+# Copy this file to config/devices.yaml and fill in your values.
+# Secrets (passwords, keys, tokens) go in .env, NOT here.
+
+# ---- Main theater (Phase 1) ----
+
+jvc:
+  host: "192.168.1.10"
+  port: 20554
+  target_input: "hdmi1"
+  target_picture_mode: "frame_adapt_hdr"
+  # password is provided via JVC_PASSWORD in .env
+
+trinnov:
+  host: "192.168.1.11"
+  port: 44100
+  safe_max_volume: -20        # constrain the UI slider maximum
+  sources:                    # friendly_name: trinnov_source_id (confirm ids)
+    kaleidescape: 0
+    plex: 1
+    madvr: 2
+    gaming_pc: 3
+
+madvr:
+  host: "192.168.1.12"
+  port: 44077
+  mac: "00:11:22:33:44:55"    # required for Wake-on-LAN power on
+  profiles:                   # source_name: profile identifier / activation command
+    kaleidescape: "profile_movies"
+    plex: "profile_movies"
+    gaming_pc: "profile_game"
+
+kaleidescape:
+  host: "192.168.1.13"
+  port: 10000
+  device_id: "01"
+
+plex:
+  base_url: "http://192.168.1.20:32400"
+  web_url: "http://192.168.1.20:32400/web"
+  default_player_id: ""
+  # token is provided via PLEX_TOKEN in .env
+
+hue:
+  bridge_ip: "192.168.1.30"
+  room_group_id: "1"
+  scenes:
+    movie: "REPLACE_WITH_SCENE_ID"
+    bright: "REPLACE_WITH_SCENE_ID"
+    off: "REPLACE_WITH_SCENE_ID"
+  # app key provided via HUE_APP_KEY in .env
+
+# ---- Source-specific behavior for Theater On ----
+
+sources:
+  kaleidescape:
+    jvc_input: "hdmi1"
+    low_latency: false
+  plex:
+    jvc_input: "hdmi1"
+    low_latency: false
+  gaming_pc:
+    jvc_input: "hdmi2"
+    low_latency: true
+
+default_source: "kaleidescape"
+
+theater_off:
+  power_off_trinnov: false
+  lighting_scene: "bright"
+
+# ---- Pool house (Phase 2 — present but not used by phase 1) ----
+
+ac_mx_44x:
+  host: "192.168.1.40"
+  port: 23
+  inputs:
+    gaming_pc: 1
+  outputs:
+    theater: 1
+    pool_house: 2
+
+mxnet:
+  cbox_host: "192.168.1.41"
+  cbox_port: 24
+  encoders:
+    gaming_pc: "ENC1"
+  decoders:
+    theater: "DEC1"
+    pool_house: "DEC2"
