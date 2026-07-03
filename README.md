@@ -38,6 +38,31 @@ Each use case is defined in `docs/usecases/` and implemented as an orchestration
 
 All device connection details live in `config/devices.yaml`. All secrets live in environment variables loaded from `.env`. See `docs/CONFIGURATION.md` for the full schema, and each file in `docs/devices/` for device-specific settings and prerequisites.
 
+## Local Development
+
+Run the two halves independently without Docker:
+
+Backend:
+
+```
+python -m venv .venv && source .venv/bin/activate
+pip install -r backend/requirements.txt
+pip install pytest pytest-asyncio          # for the test suite
+python -m pytest                            # runs offline, no hardware
+uvicorn backend.app.main:app --port 8080    # needs config/devices.yaml and .env
+```
+
+Front end (Vite dev server proxies `/api` and `/ws` to the backend on port 8080):
+
+```
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # production bundle in frontend/dist
+```
+
+In production the backend serves the built front end from its static mount, so the whole stack is one origin. The tests and the front-end build run without any device on the network.
+
 ## Contributing
 
 This repository follows a lightweight GitHub standard for maintainability.

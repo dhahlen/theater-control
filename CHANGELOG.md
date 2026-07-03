@@ -6,8 +6,19 @@ All notable changes to this project are documented in this file. This project fo
 
 ### Added
 
+- Working FastAPI backend: configuration loader and pydantic schema, in-memory state model, WebSocket event bus, device manager with a background poller, and the REST plus WebSocket API (`backend/app/core/`, `backend/app/api/`, `backend/app/main.py`).
+- Device adapters behind the common interface: JVC NZ900 (via `pyjvcprojector`), Trinnov Altitude CI, MadVR Envy, Philips Hue, Kaleidescape, and Plex, plus Phase 2 stubs for the AVPro AC-MX-44X and MXNet (`backend/app/adapters/`).
+- Shared transport helpers: a reconnecting line-oriented TCP client and a Wake-on-LAN sender (`backend/app/core/transport.py`, `backend/app/core/wol.py`).
+- Theater On and Theater Off orchestration routines with the documented sequencing, idempotency, validation rules, and live progress events (`backend/app/orchestration/`).
+- Landscape iPad front end (React, Vite, TypeScript): status bar, Theater On/Off scene buttons with a live progress checklist, and per-device panels for Trinnov, lighting, media (embedded Plex plus a Kaleidescape remote), MadVR, and JVC (`frontend/`).
+- Backend unit and integration test suite covering config, every adapter, the orchestration routines, and the API, runnable offline with no hardware (`backend/tests/`).
+- Completed multi-stage Dockerfile (builds the front end, serves it from the backend) and a non-secret `GET /api/ui-config` endpoint.
 - Vendor authoritative reference source for the MadVR Envy IP control protocol, imported from the official EnvyIpControl sample application (`docs/devices/reference/EnvyIpControl/`).
-- MadVR Envy adapter scaffold with confirmed command set (`backend/app/adapters/madvr.py`).
+
+### Confirmed
+
+- Trinnov command and status tokens verified against the community `trinnov-altitude` library: absolute volume (`volume <db>`), relative volume (`dvolume`), mute (`mute 0|1`), source select (`profile <id>`), the `id` registration handshake, and the `VOLUME`/`MUTE`/`CURRENT_PROFILE` broadcasts.
+- Kaleidescape command tokens and message framing verified against the `pykaleidescape` library (`<cpdid>/<seq>/<COMMAND>:` frames, CR-terminated).
 
 ### Changed
 
