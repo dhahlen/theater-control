@@ -44,10 +44,10 @@ export function TrinnovView({ device }: { device?: DeviceState }) {
           onChange={(ev) => cmd("volume_set", { db: Number(ev.target.value) })}
         />
         <div className="row btn-row">
-          <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2 dB</Btn>
+          <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2</Btn>
           <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
           <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
-          <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2 dB</Btn>
+          <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2</Btn>
           <button
             className={`btn icon-btn ${muted ? "btn-active" : ""}`}
             aria-label={muted ? "Unmute" : "Mute"}

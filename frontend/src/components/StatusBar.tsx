@@ -1,6 +1,6 @@
 import type { DeviceMap } from "../types";
 import { Dot } from "./common";
-import { MuteIcon } from "./icons";
+import { MuteIcon, sourceLabel } from "./icons";
 
 export function StatusBar({ devices, connected }: { devices: DeviceMap; connected: boolean }) {
   const jvc = devices.jvc;
@@ -23,7 +23,7 @@ export function StatusBar({ devices, connected }: { devices: DeviceMap; connecte
         </div>
         <div className="status-item">
           <span className="si-label">Source</span>
-          <span className="si-value">{source ?? "—"}</span>
+          <span className="si-value">{source ? sourceLabel(source) : "—"}</span>
         </div>
         <div className="status-item">
           <span className="si-label">Volume</span>

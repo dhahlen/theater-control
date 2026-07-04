@@ -407,7 +407,11 @@ body {
   display: grid;
   grid-template-columns: 0.9fr 1.5fr 0.9fr;
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
+}
+.scene-source {
+  display: flex;
+  align-items: center;
 }
 .scene-btn {
   width: 100%;
@@ -448,7 +452,7 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-top: 6px;
+  flex: 1;
 }
 .source-chip {
   display: inline-flex;
