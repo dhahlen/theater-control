@@ -158,16 +158,30 @@ def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
     def _num(value: Any) -> float | int | None:
         return value if isinstance(value, (int, float)) else None
 
+    # TV episodes: build an "S02E04"-style label when the indices are present.
+    episode = None
+    if meta.get("type") == "episode":
+        season = meta.get("parentIndex")
+        number = meta.get("index")
+        if isinstance(season, int) and isinstance(number, int):
+            episode = f"S{season:02d}E{number:02d}"
+
+    duration_ms = _num(meta.get("duration"))
     return {
         "title": meta.get("title"),
         "type": meta.get("type"),
         "grandparent_title": meta.get("grandparentTitle"),
+        "episode": episode,
         "year": meta.get("year"),
+        "content_rating": meta.get("contentRating"),
+        "runtime_min": round(duration_ms / 60000) if duration_ms else None,
+        "genres": [g.get("tag") for g in (meta.get("Genre") or []) if g.get("tag")][:3],
+        "ratings": _parse_ratings(meta),
         "summary": meta.get("summary"),
         "state": player.get("state"),
         "player": player.get("title") or player.get("product"),
         # Progress.
-        "duration_ms": _num(meta.get("duration")),
+        "duration_ms": duration_ms,
         "offset_ms": _num(meta.get("viewOffset")),
         # Cover art / backdrop (internal Plex paths; proxied by /api/plex/art).
         "thumb": meta.get("thumb") or meta.get("grandparentThumb"),
@@ -177,6 +191,7 @@ def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
         "resolution": media.get("videoResolution"),
         "width": _num(media.get("width")),
         "height": _num(media.get("height")),
+        "dynamic_range": _dynamic_range(media, part),
         "video_codec": media.get("videoCodec"),
         "audio_codec": media.get("audioCodec"),
         "audio_channels": _num(media.get("audioChannels")),
@@ -190,3 +205,32 @@ def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
         "transcoding": bool(transcode),
         "bandwidth": _num(session.get("bandwidth")),     # kbps reserved
     }
+
+
+def _parse_ratings(meta: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normalize Plex's Rating array into [{source, value}] for TMDB/RT/IMDb."""
+
+    sources = {"imdb": "IMDb", "themoviedb": "TMDB", "rottentomatoes": "RT"}
+    out: list[dict[str, Any]] = []
+    for rating in meta.get("Rating") or []:
+        image = str(rating.get("image", ""))
+        value = rating.get("value")
+        source = next((label for key, label in sources.items() if key in image), None)
+        if source and value is not None:
+            out.append({"source": source, "value": value})
+    return out
+
+
+def _dynamic_range(media: dict[str, Any], part: dict[str, Any]) -> str | None:
+    """Best-effort HDR/Dolby Vision/HLG detection from the video stream."""
+
+    streams = part.get("Stream") or []
+    video = next((s for s in streams if s.get("streamType") == 1), {})
+    if video.get("DOVIPresent") or media.get("DOVIPresent"):
+        return "Dolby Vision"
+    trc = str(video.get("colorTrc", "")).lower()
+    if trc == "smpte2084":
+        return "HDR10"
+    if trc == "arib-std-b67":
+        return "HLG"
+    return None
