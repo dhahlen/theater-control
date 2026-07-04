@@ -167,3 +167,34 @@ async def test_theater_off_success():
 async def test_theater_off_fails_without_jvc():
     result, _ = await _collect(lambda emit: run_theater_off({}, CONFIG, emit))
     assert result.overall == "failed"
+
+
+class MockHue:
+    def __init__(self):
+        self.device_id = "hue"
+        self.sent: list[tuple[str, dict]] = []
+
+    async def send(self, command, params=None):
+        self.sent.append((command, params or {}))
+        return {}
+
+    async def get_status(self):
+        return DeviceStatus(device_id="hue", reachable=Reachability.ONLINE, power="on")
+
+
+async def test_theater_off_raises_lights_via_level():
+    jvc = MockJvc(power="standby")  # already off: routine still applies lighting
+    hue = MockHue()
+    config = {**CONFIG, "theater_off": {"power_off_trinnov": False,
+                                        "lighting_scene": None, "lighting_level": 254}}
+    await _collect(lambda emit: run_theater_off({"jvc": jvc, "hue": hue}, config, emit))
+    assert ("set_level", {"bri": 254}) in hue.sent
+
+
+async def test_theater_off_prefers_scene_when_set():
+    jvc = MockJvc(power="standby")
+    hue = MockHue()
+    config = {**CONFIG, "theater_off": {"lighting_scene": "dim", "lighting_level": 254}}
+    await _collect(lambda emit: run_theater_off({"jvc": jvc, "hue": hue}, config, emit))
+    assert ("recall_scene", {"scene": "dim"}) in hue.sent
+    assert all(c != "set_level" for c, _ in hue.sent)

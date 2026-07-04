@@ -57,8 +57,10 @@ async def run_theater_off(
         else:
             await progress.finish(step, StepStatus.OK, "left on (per config)")
 
-    # Lighting: optionally recall a scene on shutdown.
+    # Lighting: optionally recall a scene, or raise the group to a level, on
+    # shutdown. A level is useful when no "lights up" scene exists on the bridge.
     scene = off_config.get("lighting_scene")
+    level = off_config.get("lighting_level")
     if hue is not None and scene:
         step = await progress.start("lighting", f"Recalling scene {scene}")
         try:
@@ -66,6 +68,13 @@ async def run_theater_off(
             await progress.finish(step, StepStatus.OK, f"scene {scene}")
         except Exception as exc:
             await progress.finish(step, StepStatus.FAILED, f"scene recall failed: {exc}")
+    elif hue is not None and level is not None:
+        step = await progress.start("lighting", f"Lights to {round(level / 254 * 100)}%")
+        try:
+            await hue.send("set_level", {"bri": level})
+            await progress.finish(step, StepStatus.OK, f"level {level}")
+        except Exception as exc:
+            await progress.finish(step, StepStatus.FAILED, f"set level failed: {exc}")
 
     result = RoutineResult(steps=progress.steps)
     result.overall = "failed" if not critical_ok else (

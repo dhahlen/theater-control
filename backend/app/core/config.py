@@ -92,7 +92,8 @@ class SourceBehavior(BaseModel):
 
 class TheaterOffConfig(BaseModel):
     power_off_trinnov: bool = False
-    lighting_scene: str = "bright"
+    lighting_scene: str | None = None       # recall a Hue scene on shutdown, or
+    lighting_level: int | None = None        # raise the group to this level (0-254)
 
 
 class AcMx44xConfig(BaseModel):
