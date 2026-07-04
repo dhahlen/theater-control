@@ -12,6 +12,7 @@ import { TrinnovView } from "./components/views/TrinnovView";
 import { MadvrView } from "./components/views/MadvrView";
 import { JvcView } from "./components/views/JvcView";
 import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
+import { usePoolHouseState } from "./components/poolhouse/state";
 import type { Room } from "./components/RoomSwitcher";
 
 interface UiConfig {
@@ -34,6 +35,7 @@ export function App() {
   const [ui, setUi] = useState<UiConfig>({ sources: [], default_source: "", devices: [] });
   const [tab, setTab] = useState("theater");
   const [room, setRoom] = useState<Room>("theater");
+  const ph = usePoolHouseState();
 
   useEffect(() => {
     fetch("/api/ui-config")
@@ -52,15 +54,15 @@ export function App() {
   if (room === "poolhouse") {
     return (
       <div className="app">
-        <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} />
-        <PoolHouseRoom />
+        <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} ph={ph} />
+        <PoolHouseRoom s={ph} />
       </div>
     );
   }
 
   return (
     <div className="app">
-      <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} />
+      <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} ph={ph} />
       <Toolbar tabs={tabs} active={tab} onSelect={setTab} devices={devices} />
 
       {tab === "theater" && (

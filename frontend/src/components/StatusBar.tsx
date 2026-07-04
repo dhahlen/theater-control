@@ -2,17 +2,27 @@ import type { DeviceMap } from "../types";
 import { Dot } from "./common";
 import { MuteIcon, sourceLabel } from "./icons";
 import { RoomSwitcher, type Room } from "./RoomSwitcher";
+import type { PoolHouseState } from "./poolhouse/state";
+
+interface StatusItem {
+  label: string;
+  value: React.ReactNode;
+  on?: boolean;
+  muted?: boolean;
+}
 
 export function StatusBar({
   devices,
   connected,
   room,
   onRoomChange,
+  ph,
 }: {
   devices: DeviceMap;
   connected: boolean;
   room: Room;
   onRoomChange: (r: Room) => void;
+  ph: PoolHouseState;
 }) {
   const jvc = devices.jvc;
   const trinnov = devices.trinnov;
@@ -21,8 +31,23 @@ export function StatusBar({
   const source = trinnov?.input ?? jvc?.input;
 
   const theaterPower = jvc?.power === "on" ? "ON" : jvc?.power ? jvc.power.toUpperCase() : "—";
-
   const poolhouse = room === "poolhouse";
+
+  const items: StatusItem[] = poolhouse
+    ? [
+        { label: "Display", value: ph.power ? "ON" : "STANDBY", on: ph.power },
+        { label: "Source", value: sourceLabel(ph.source) },
+        { label: "Volume", value: ph.muted ? "Muted" : `${ph.volume} dB`, muted: ph.muted },
+      ]
+    : [
+        { label: "Theater", value: theaterPower, on: jvc?.power === "on" },
+        { label: "Source", value: source ? sourceLabel(source) : "—" },
+        {
+          label: "Volume",
+          value: muted ? "Muted" : volume !== undefined ? `${volume} dB` : "—",
+          muted,
+        },
+      ];
 
   return (
     <div className="statusbar">
@@ -30,26 +55,18 @@ export function StatusBar({
         <span className="brand-mark">◐</span> {poolhouse ? "Pool House Control" : "Theater Control"}
       </div>
       <RoomSwitcher room={room} onSelect={onRoomChange} />
-      {!poolhouse && (
-        <div className="status-items">
-          <div className="status-item">
-            <span className="si-label">Theater</span>
-            <span className={`si-value ${jvc?.power === "on" ? "on" : ""}`}>{theaterPower}</span>
-          </div>
-          <div className="status-item">
-            <span className="si-label">Source</span>
-            <span className="si-value">{source ? sourceLabel(source) : "—"}</span>
-          </div>
-          <div className="status-item">
-            <span className="si-label">Volume</span>
-            <span className={`si-value si-vol ${muted ? "si-muted" : ""}`}>
-              {muted && <MuteIcon muted size={18} />}
-              {muted ? "Muted" : volume !== undefined ? `${volume} dB` : "—"}
+      <div className="status-items">
+        {items.map((it) => (
+          <div className="status-item" key={it.label}>
+            <span className="si-label">{it.label}</span>
+            <span className={`si-value si-vol ${it.on ? "on" : ""} ${it.muted ? "si-muted" : ""}`}>
+              {it.muted && <MuteIcon muted size={18} />}
+              {it.value}
             </span>
           </div>
-        </div>
-      )}
-      <div className={`conn ${poolhouse ? "conn-push" : ""}`}>
+        ))}
+      </div>
+      <div className="conn">
         <Dot reach={connected ? "online" : "offline"} />
         <span>{connected ? "live" : "reconnecting"}</span>
       </div>

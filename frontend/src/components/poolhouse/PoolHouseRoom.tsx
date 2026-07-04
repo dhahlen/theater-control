@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Toolbar, type TabDef } from "../Toolbar";
-import { usePoolHouseState } from "./state";
+import type { PoolHouseState } from "./state";
 import { OverviewTab } from "./OverviewTab";
 import { DisplayTab } from "./DisplayTab";
 import { TrinnovTab } from "./TrinnovTab";
@@ -15,8 +15,7 @@ const TABS: TabDef[] = [
   { key: "media", label: "Media" },
 ];
 
-export function PoolHouseRoom() {
-  const s = usePoolHouseState();
+export function PoolHouseRoom({ s }: { s: PoolHouseState }) {
   const [tab, setTab] = useState("overview");
 
   return (
