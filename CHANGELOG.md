@@ -6,7 +6,8 @@ All notable changes to this project are documented in this file. This project fo
 
 ### Added
 
-- Pool House devices wired into the backend (Phase 2): a `poolhouse` config block registers the second room's devices under `ph_*` ids, reusing the adapter layer for the Trinnov Altitude 16 (`ph_trinnov`), the Office Hue bridge as one adapter per zone (`ph_hue_<zone>`), and the Pool House Plex target (`ph_plex`). A new LG G5 webOS adapter (`ph_lg`) speaks the SSAP WebSocket protocol (register/pairing with a stored client key, power off over IP and on via Wake-on-LAN, volume, mute, HDMI input, picture mode). New secrets `HUE_POOLHOUSE_APP_KEY` and `LG_CLIENT_KEY`. The Pool House front end still runs on local state; wiring it to these devices is the next step.
+- Pool House room is now live end to end (Phase 2). The backend registers the second room's devices under `ph_*` ids, reusing the adapter layer for the Trinnov Altitude 16 (`ph_trinnov`), the Office Hue bridge as one adapter per zone (`ph_hue_<zone>`), and the Pool House Plex target (`ph_plex`), plus a new LG G5 webOS adapter (`ph_lg`) over the SSAP WebSocket protocol (register/pairing with a stored client key, power off over IP and on via Wake-on-LAN, volume, mute, picture mode). New secrets `HUE_POOLHOUSE_APP_KEY` and `LG_CLIENT_KEY`, plus a `poolhouse` config block.
+- The Pool House front end now drives those real devices instead of local mock state: Room On powers the LG and sets the Altitude 16 source, Room Off powers the display off, the Trinnov tab controls volume/source/presets/upmixer live, each Hue zone (Pool House, Bar, Lounge, Office) has live brightness/scenes, and the status bar mirrors the display, source, and volume. The LG stays on HDMI 1 (fed by the Altitude 16), so source switching is on the Trinnov.
 
 ## [0.2.0] - 2026-07-04
 

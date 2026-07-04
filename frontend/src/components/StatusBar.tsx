@@ -2,7 +2,7 @@ import type { DeviceMap } from "../types";
 import { Dot } from "./common";
 import { MuteIcon, sourceLabel } from "./icons";
 import { RoomSwitcher, type Room } from "./RoomSwitcher";
-import type { PoolHouseState } from "./poolhouse/state";
+import type { PoolHouse } from "./poolhouse/live";
 
 interface StatusItem {
   label: string;
@@ -22,7 +22,7 @@ export function StatusBar({
   connected: boolean;
   room: Room;
   onRoomChange: (r: Room) => void;
-  ph: PoolHouseState;
+  ph: PoolHouse;
 }) {
   const jvc = devices.jvc;
   const trinnov = devices.trinnov;
@@ -35,9 +35,17 @@ export function StatusBar({
 
   const items: StatusItem[] = poolhouse
     ? [
-        { label: "Display", value: ph.power ? "ON" : "STANDBY", on: ph.power },
-        { label: "Source", value: sourceLabel(ph.source) },
-        { label: "Volume", value: ph.muted ? "Muted" : `${ph.volume} dB`, muted: ph.muted },
+        {
+          label: "Display",
+          value: ph.lgOnline ? (ph.power ? "ON" : "STANDBY") : "OFFLINE",
+          on: ph.power,
+        },
+        { label: "Source", value: ph.source ? sourceLabel(ph.source) : "—" },
+        {
+          label: "Volume",
+          value: ph.muted ? "Muted" : ph.volume !== undefined ? `${ph.volume} dB` : "—",
+          muted: ph.muted,
+        },
       ]
     : [
         { label: "Theater", value: theaterPower, on: jvc?.power === "on" },

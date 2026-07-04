@@ -1,36 +1,39 @@
 import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
-import { SOURCES, ZONES, type PoolHouseState } from "./state";
+import type { PoolHouse } from "./live";
 
-// Room overview: Room On / Room Off scenes, source picker, and a control card per
-// device that mirrors the theater dashboard (volume buttons, lighting sliders).
-// The device tabs carry the fuller option menus.
-export function OverviewTab({ s }: { s: PoolHouseState }) {
+// Room overview: Room On / Room Off (power the display, set the source), the
+// source picker, and a control card per device mirroring the theater dashboard.
+export function OverviewTab({ s }: { s: PoolHouse }) {
+  const sourceNames = Object.keys(s.sources);
+
   return (
     <>
       <section className="scenebar ph-scenebar">
         <div className="scene-primary">
-          <button className="scene-btn scene-on" onClick={() => s.setPower(true)} disabled={s.power}>
+          <button className="scene-btn scene-on" onClick={s.roomOn}>
             <span className="scene-title">Room On</span>
-            <span className="scene-sub">{s.power ? "on" : `source: ${sourceLabel(s.source)}`}</span>
+            <span className="scene-sub">
+              {s.power ? "on" : `source: ${s.source ? sourceLabel(s.source) : "—"}`}
+            </span>
           </button>
         </div>
         <div className="scene-source">
           <div className="source-list ph-source-list">
-            {SOURCES.map((src) => (
+            {sourceNames.map((name) => (
               <button
-                key={src}
-                className={`source-chip ${src === s.source ? "chip-active" : ""}`}
-                onClick={() => s.setSource(src)}
-                title={sourceLabel(src)}
+                key={name}
+                className={`source-chip ${name === s.source ? "chip-active" : ""}`}
+                onClick={() => s.setSource(name)}
+                title={sourceLabel(name)}
               >
-                <SourceMark name={src} />
+                <SourceMark name={name} />
               </button>
             ))}
           </div>
         </div>
         <div className="scene-primary">
-          <button className="scene-btn scene-off" onClick={() => s.setPower(false)} disabled={!s.power}>
+          <button className="scene-btn scene-off" onClick={s.roomOff}>
             <span className="scene-title">Room Off</span>
             <span className="scene-sub">standby</span>
           </button>
@@ -42,45 +45,50 @@ export function OverviewTab({ s }: { s: PoolHouseState }) {
         <section className="card">
           <div className="card-head">
             <h2>LG G5 84&quot;</h2>
-            <span className={`pill ${s.power ? "pill-on" : "pill-off"}`}>{s.power ? "on" : "standby"}</span>
+            <span className={`pill ${s.power ? "pill-on" : "pill-off"}`}>
+              {s.lgOnline ? (s.power ? "on" : "standby") : "offline"}
+            </span>
           </div>
           <div className="info-grid">
-            <div><span className="muted">Input</span><strong>{s.lgInput}</strong></div>
-            <div><span className="muted">Source</span><strong>{sourceLabel(s.source)}</strong></div>
-            <div><span className="muted">Picture</span><strong>{s.picture}</strong></div>
+            <div><span className="muted">Input</span><strong>HDMI 1</strong></div>
+            <div><span className="muted">Source</span><strong>{s.source ? sourceLabel(s.source) : "—"}</strong></div>
           </div>
           <div className="subhead">Power</div>
           <div className="row btn-row">
-            <Btn active={s.power} onClick={() => s.setPower(true)}>On</Btn>
-            <Btn active={!s.power} onClick={() => s.setPower(false)}>Off</Btn>
+            <Btn active={s.power} onClick={() => s.lgPower(true)}>On</Btn>
+            <Btn active={s.lgOnline && !s.power} onClick={() => s.lgPower(false)}>Off</Btn>
           </div>
         </section>
 
-        {/* Trinnov Altitude 16 — volume controls, matching the theater card */}
+        {/* Trinnov Altitude 16 — volume controls */}
         <section className="card">
           <div className="card-head">
             <h2>Trinnov Altitude 16</h2>
-            <span className="pill pill-on">online</span>
+            <span className={`pill ${s.trinnovOnline ? "pill-on" : "pill-off"}`}>
+              {s.trinnovOnline ? "online" : "offline"}
+            </span>
           </div>
           <div className="row">
             <div className="stat">
               <span className="stat-label">Volume</span>
-              <span className="stat-value">{s.muted ? "Muted" : `${s.volume} dB`}</span>
+              <span className="stat-value">
+                {s.muted ? "Muted" : s.volume !== undefined ? `${s.volume} dB` : "—"}
+              </span>
             </div>
             <div className="stat">
               <span className="stat-label">Source</span>
-              <span className="stat-value">{sourceLabel(s.source)}</span>
+              <span className="stat-value">{s.source ? sourceLabel(s.source) : "—"}</span>
             </div>
           </div>
           <div className="row btn-row">
-            <Btn onClick={() => s.nudge(-2)}>−2</Btn>
-            <Btn onClick={() => s.nudge(-0.5)}>−0.5</Btn>
-            <Btn onClick={() => s.nudge(0.5)}>+0.5</Btn>
-            <Btn onClick={() => s.nudge(2)}>+2</Btn>
+            <Btn onClick={() => s.volumeAdjust(-2)}>−2</Btn>
+            <Btn onClick={() => s.volumeAdjust(-0.5)}>−0.5</Btn>
+            <Btn onClick={() => s.volumeAdjust(0.5)}>+0.5</Btn>
+            <Btn onClick={() => s.volumeAdjust(2)}>+2</Btn>
             <button
               className={`btn icon-btn ${s.muted ? "btn-active" : ""}`}
               aria-label={s.muted ? "Unmute" : "Mute"}
-              onClick={() => s.setMuted((m) => !m)}
+              onClick={() => s.setMute(!s.muted)}
             >
               <MuteIcon muted={s.muted} />
             </button>
@@ -94,7 +102,7 @@ export function OverviewTab({ s }: { s: PoolHouseState }) {
             <span className="pill pill-on">online</span>
           </div>
           <div className="light-rows">
-            {ZONES.map((z) => (
+            {s.zones.map((z) => (
               <div className="light-row" key={z.key}>
                 <span className="light-name">{z.label}</span>
                 <input
@@ -102,8 +110,9 @@ export function OverviewTab({ s }: { s: PoolHouseState }) {
                   type="range"
                   min={0}
                   max={254}
-                  value={s.bri[z.key] ?? 128}
-                  onChange={(e) => s.setBri((b) => ({ ...b, [z.key]: Number(e.target.value) }))}
+                  value={z.bri}
+                  disabled={!z.online}
+                  onChange={(e) => s.zoneLevel(z.id, Number(e.target.value))}
                 />
               </div>
             ))}
@@ -114,14 +123,24 @@ export function OverviewTab({ s }: { s: PoolHouseState }) {
         <section className="card">
           <div className="card-head">
             <h2>Plex</h2>
-            <span className="pill pill-on">online</span>
+            <span className={`pill ${s.plex?.reachable === "online" ? "pill-on" : "pill-off"}`}>
+              {s.plex?.reachable ?? "—"}
+            </span>
           </div>
           <div className="info-grid">
             <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
-            <div><span className="muted">Now playing</span><strong>—</strong></div>
+            <div>
+              <span className="muted">Now playing</span>
+              <strong>{nowPlaying(s.plex) ?? "—"}</strong>
+            </div>
           </div>
         </section>
       </div>
     </>
   );
+}
+
+function nowPlaying(plex?: PoolHouse["plex"]): string | undefined {
+  const np = plex?.extra?.now_playing as { title?: string } | undefined;
+  return np?.title;
 }
