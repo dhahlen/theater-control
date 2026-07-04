@@ -20,15 +20,6 @@ export function JvcPanel({ device }: { device?: DeviceState }) {
         <Stat label="Low latency" value={lowLatency ?? "—"} />
         <Stat label="Signal" value={signal ?? "—"} />
       </div>
-      <div className="subhead">Input</div>
-      <div className="row btn-row">
-        <Btn onClick={() => cmd("input_mode", { input: "hdmi1" })} active={device.input === "hdmi1"}>
-          HDMI 1
-        </Btn>
-        <Btn onClick={() => cmd("input_mode", { input: "hdmi2" })} active={device.input === "hdmi2"}>
-          HDMI 2
-        </Btn>
-      </div>
       <div className="subhead">Low latency</div>
       <div className="row btn-row">
         <Btn onClick={() => cmd("low_latency", { state: "on" })} active={lowLatency === "on"}>
