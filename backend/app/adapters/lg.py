@@ -65,11 +65,18 @@ class SsapTransport:
         self._ws: Any = None
 
     async def connect(self) -> None:
+        import ssl
+
         import websockets
 
-        self._ws = await websockets.connect(
-            self._url, open_timeout=5, ping_interval=None, max_size=2**22
-        )
+        kwargs: dict[str, Any] = {"open_timeout": 5, "ping_interval": None, "max_size": 2**22}
+        if self._url.startswith("wss://"):
+            # webOS uses a self-signed certificate on the secure SSAP port.
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            kwargs["ssl"] = ctx
+        self._ws = await websockets.connect(self._url, **kwargs)
 
     async def send(self, message: str) -> None:
         await self._ws.send(message)
@@ -141,7 +148,9 @@ class LgAdapter(DeviceAdapter):
             if self._transport_factory is not None:
                 self._transport = self._transport_factory()
             else:
-                self._transport = SsapTransport(f"ws://{self._host}:{self._port}")
+                # Port 3001 is the secure SSAP socket (wss) newer webOS requires.
+                scheme = "wss" if self._port == 3001 else "ws"
+                self._transport = SsapTransport(f"{scheme}://{self._host}:{self._port}")
             await self._transport.connect()
             self._reader = asyncio.create_task(
                 self._read_loop(), name=f"lg:{self.device_id}"

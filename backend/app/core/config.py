@@ -92,7 +92,9 @@ class LgConfig(BaseModel):
     """LG G5 (webOS) display, controlled over the SSAP WebSocket API."""
 
     host: str
-    port: int = 3000  # ws://host:3000 (SSAP); pairing yields a client key
+    # 3001 is the secure SSAP socket (wss) that webOS 2023+ requires; 3000 is the
+    # older plaintext ws port. Pairing yields a reusable client key either way.
+    port: int = 3001
     mac: str | None = None  # optional; enables Wake-on-LAN power-on
     inputs: dict[str, str] = Field(default_factory=dict)  # source_name -> HDMI id
 
