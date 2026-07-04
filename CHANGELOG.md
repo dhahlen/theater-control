@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Added
+
+- Pool House devices wired into the backend (Phase 2): a `poolhouse` config block registers the second room's devices under `ph_*` ids, reusing the adapter layer for the Trinnov Altitude 16 (`ph_trinnov`), the Office Hue bridge as one adapter per zone (`ph_hue_<zone>`), and the Pool House Plex target (`ph_plex`). A new LG G5 webOS adapter (`ph_lg`) speaks the SSAP WebSocket protocol (register/pairing with a stored client key, power off over IP and on via Wake-on-LAN, volume, mute, HDMI input, picture mode). New secrets `HUE_POOLHOUSE_APP_KEY` and `LG_CLIENT_KEY`. The Pool House front end still runs on local state; wiring it to these devices is the next step.
+
 ## [0.2.0] - 2026-07-04
 
 ### Added
