@@ -88,6 +88,55 @@ class HueConfig(BaseModel):
     scenes: dict[str, str] = Field(default_factory=dict)
 
 
+class LgConfig(BaseModel):
+    """LG G5 (webOS) display, controlled over the SSAP WebSocket API."""
+
+    host: str
+    port: int = 3000  # ws://host:3000 (SSAP); pairing yields a client key
+    mac: str | None = None  # optional; enables Wake-on-LAN power-on
+    inputs: dict[str, str] = Field(default_factory=dict)  # source_name -> HDMI id
+
+    @field_validator("mac")
+    @classmethod
+    def _validate_mac(cls, value: str | None) -> str | None:
+        return _normalize_mac(value) if value else None
+
+
+class HueZoneConfig(BaseModel):
+    """One Hue group or zone, with its optional named scenes."""
+
+    group: str
+    scenes: dict[str, str] = Field(default_factory=dict)
+
+
+class PoolHouseHueConfig(BaseModel):
+    """Office Hue bridge that also carries the Pool House room and its zones."""
+
+    bridge_ip: str
+    zones: dict[str, HueZoneConfig] = Field(default_factory=dict)
+
+
+class PoolHousePlexConfig(BaseModel):
+    """Pool House playback target on the shared Plex server."""
+
+    player_id: str = ""
+    player_name: str = ""
+
+
+class PoolHouseConfig(BaseModel):
+    """Second room (Phase 2): reuses the adapter layer with a distinct device set.
+
+    The shared Plex server and token come from the top-level ``plex``/secrets;
+    only the Pool House playback target lives here.
+    """
+
+    trinnov: TrinnovConfig | None = None
+    hue: PoolHouseHueConfig | None = None
+    lg: LgConfig | None = None
+    plex: PoolHousePlexConfig | None = None
+    default_source: str = ""
+
+
 class SourceBehavior(BaseModel):
     """Source-specific target state applied by the Theater On routine."""
 
@@ -121,6 +170,8 @@ class Secrets(BaseModel):
     jvc_password: str | None = None
     hue_app_key: str | None = None
     plex_token: str | None = None
+    hue_poolhouse_app_key: str | None = None
+    lg_client_key: str | None = None
 
 
 class AppConfig(BaseModel):
@@ -136,6 +187,10 @@ class AppConfig(BaseModel):
     sources: dict[str, SourceBehavior] = Field(default_factory=dict)
     default_source: str = "kaleidescape"
     theater_off: TheaterOffConfig = Field(default_factory=TheaterOffConfig)
+
+    # Second room (Phase 2). Its devices are registered alongside the theater
+    # devices under ph_* ids; the theater room stays the default.
+    poolhouse: PoolHouseConfig | None = None
 
     # Phase 2, present but ignored by phase 1 orchestration.
     ac_mx_44x: AcMx44xConfig | None = None
@@ -170,6 +225,8 @@ def _load_secrets() -> Secrets:
         jvc_password=os.environ.get("JVC_PASSWORD"),
         hue_app_key=os.environ.get("HUE_APP_KEY"),
         plex_token=os.environ.get("PLEX_TOKEN"),
+        hue_poolhouse_app_key=os.environ.get("HUE_POOLHOUSE_APP_KEY"),
+        lg_client_key=os.environ.get("LG_CLIENT_KEY"),
     )
 
 

@@ -92,6 +92,61 @@ class DeviceManager:
                 web_url=cfg.plex.web_url,
             )
 
+        self._build_poolhouse_adapters()
+
+    def _build_poolhouse_adapters(self) -> None:
+        """Register the Pool House room's devices under ph_* ids (Phase 2).
+
+        The Altitude 16, Office Hue zones, and Pool House Plex target reuse the
+        existing adapters; the LG G5 uses its own webOS adapter.
+        """
+
+        cfg = self._config
+        ph = cfg.poolhouse
+        if not ph:
+            return
+
+        from ..adapters.trinnov import TrinnovAdapter
+        from ..adapters.hue import HueAdapter
+        from ..adapters.plex import PlexAdapter
+
+        if ph.trinnov:
+            self._adapters["ph_trinnov"] = TrinnovAdapter(
+                device_id="ph_trinnov",
+                host=ph.trinnov.host,
+                port=ph.trinnov.port,
+                sources=ph.trinnov.sources,
+                mac=ph.trinnov.mac,
+            )
+        if ph.hue:
+            for zone_key, zone in ph.hue.zones.items():
+                self._adapters[f"ph_hue_{zone_key}"] = HueAdapter(
+                    device_id=f"ph_hue_{zone_key}",
+                    bridge_ip=ph.hue.bridge_ip,
+                    app_key=cfg.secrets.hue_poolhouse_app_key or "",
+                    room_group_id=zone.group,
+                    scenes=zone.scenes,
+                )
+        if ph.plex and cfg.plex:
+            self._adapters["ph_plex"] = PlexAdapter(
+                device_id="ph_plex",
+                base_url=cfg.plex.base_url,
+                token=cfg.secrets.plex_token or "",
+                default_player_id=ph.plex.player_id,
+                web_url=cfg.plex.web_url,
+            )
+        if ph.lg:
+            from ..adapters.lg import LgAdapter
+
+            self._adapters["ph_lg"] = LgAdapter(
+                device_id="ph_lg",
+                host=ph.lg.host,
+                port=ph.lg.port,
+                client_key=cfg.secrets.lg_client_key or "",
+                mac=ph.lg.mac,
+                inputs=ph.lg.inputs,
+            )
+
     # -- accessors --------------------------------------------------------
 
     @property

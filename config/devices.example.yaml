@@ -79,7 +79,46 @@ theater_off:
   power_off_trinnov: false
   lighting_scene: "bright"
 
-# ---- Pool house (Phase 2 — present but not used by phase 1) ----
+# ---- Pool house (Phase 2 — a second room registered under ph_* device ids) ----
+# Reuses the adapter layer with a distinct device set. Omit this whole block to
+# run the theater-only build. The shared Plex server/token come from `plex` above.
+
+poolhouse:
+  trinnov:                    # Trinnov Altitude 16 (distinct from the theater CI)
+    host: "192.168.1.50"
+    sources:                  # friendly_name: source id (confirm on the live unit)
+      shield: 0
+      gaming_pc: 1
+      switch2: 2
+      switch1: 3
+      node: 4
+  hue:                        # Office Hue bridge; each zone is its own group
+    bridge_ip: "192.168.1.51"
+    zones:
+      poolhouse:
+        group: "3"            # Pool House room (contains the Bar and Lounge zones)
+      bar:
+        group: "4"
+      lounge:
+        group: "5"
+      office:
+        group: "1"
+        scenes:               # only groups with saved scenes need this
+          "Dim": "REPLACE_WITH_SCENE_ID"
+          "Bright White": "REPLACE_WITH_SCENE_ID"
+    # app key provided via HUE_POOLHOUSE_APP_KEY in .env
+  lg:                         # LG G5 display (webOS SSAP)
+    host: "192.168.1.52"
+    port: 3000
+    mac: "AA:BB:CC:DD:EE:FF"  # required for Wake-on-LAN power on
+    inputs:                   # source_name: LG HDMI input id
+      shield: "HDMI_1"
+      gaming_pc: "HDMI_2"
+    # client key provided via LG_CLIENT_KEY in .env (paired on first connect)
+  plex:                       # Pool House playback target on the shared server
+    player_id: "REPLACE_WITH_CLIENT_IDENTIFIER"
+    player_name: "Pool House SHIELD"
+  default_source: "shield"
 
 ac_mx_44x:
   host: "192.168.1.40"
