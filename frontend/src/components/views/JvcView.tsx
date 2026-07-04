@@ -62,11 +62,11 @@ export function JvcView({ device }: { device?: DeviceState }) {
 
       <section className="card">
         <div className="card-label">Picture mode</div>
-        <div className="row btn-row wrap">
+        <div className="mode-grid">
           {PICTURE_MODES.map((mode) => (
-            <Btn key={mode} onClick={() => cmd("picture_mode", { mode })}>
+            <button key={mode} className="btn mode-btn" onClick={() => cmd("picture_mode", { mode })}>
               {mode.replace(/_/g, " ")}
-            </Btn>
+            </button>
           ))}
         </div>
       </section>
