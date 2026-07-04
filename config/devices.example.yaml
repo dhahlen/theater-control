@@ -109,7 +109,7 @@ poolhouse:
     # app key provided via HUE_POOLHOUSE_APP_KEY in .env
   lg:                         # LG G5 display (webOS SSAP)
     host: "192.168.1.52"
-    port: 3000
+    port: 3001               # 3001 = secure wss (webOS 2023+); 3000 = legacy ws
     mac: "AA:BB:CC:DD:EE:FF"  # required for Wake-on-LAN power on
     inputs:                   # source_name: LG HDMI input id
       shield: "HDMI_1"

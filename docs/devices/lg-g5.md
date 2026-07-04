@@ -1,9 +1,11 @@
 # LG G5 (webOS) — Pool House display
 
 The Pool House display is an LG G5 84 inch, controlled over the LG "SSAP"
-protocol: a JSON message bus over a WebSocket on `ws://<tv>:3000` (plaintext) or
-`wss://<tv>:3001` (TLS with a self-signed certificate). The adapter uses the
-plaintext port by default.
+protocol: a JSON message bus over a WebSocket on `wss://<tv>:3001` (TLS with a
+self-signed certificate) or the legacy `ws://<tv>:3000` (plaintext). webOS 2023
+and newer require the secure port, so the adapter defaults to 3001 and uses
+`wss` for it (certificate verification disabled for the self-signed cert); set
+`port: 3000` for older sets that still accept plaintext.
 
 ## Pairing
 
