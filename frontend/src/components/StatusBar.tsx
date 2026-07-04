@@ -1,5 +1,6 @@
 import type { DeviceMap } from "../types";
 import { Dot } from "./common";
+import { MuteIcon } from "./icons";
 
 export function StatusBar({ devices, connected }: { devices: DeviceMap; connected: boolean }) {
   const jvc = devices.jvc;
@@ -26,8 +27,9 @@ export function StatusBar({ devices, connected }: { devices: DeviceMap; connecte
         </div>
         <div className="status-item">
           <span className="si-label">Volume</span>
-          <span className="si-value">
-            {muted ? "MUTE" : volume !== undefined ? `${volume} dB` : "—"}
+          <span className={`si-value si-vol ${muted ? "si-muted" : ""}`}>
+            {muted && <MuteIcon muted size={18} />}
+            {muted ? "Muted" : volume !== undefined ? `${volume} dB` : "—"}
           </span>
         </div>
       </div>

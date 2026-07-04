@@ -1,6 +1,7 @@
 import { sendCommand } from "../api";
 import type { DeviceState } from "../types";
 import { Btn, Panel, Stat } from "./common";
+import { MuteIcon } from "./icons";
 
 export function TrinnovPanel({ device }: { device?: DeviceState }) {
   if (!device) return null;
@@ -22,10 +23,14 @@ export function TrinnovPanel({ device }: { device?: DeviceState }) {
         <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2 dB</Btn>
         <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
         <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
-        <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2 dB</Btn>
-        <Btn onClick={() => cmd("mute", { state: muted ? "off" : "on" })} active={muted}>
-          {muted ? "Unmute" : "Mute"}
-        </Btn>
+        <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2</Btn>
+        <button
+          className={`btn icon-btn ${muted ? "btn-active" : ""}`}
+          aria-label={muted ? "Unmute" : "Mute"}
+          onClick={() => cmd("mute", { state: muted ? "off" : "on" })}
+        >
+          <MuteIcon muted={muted} />
+        </button>
       </div>
       <div className="subhead">Source</div>
       <div className="row btn-row wrap">

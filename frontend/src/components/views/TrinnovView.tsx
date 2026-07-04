@@ -1,6 +1,7 @@
 import { sendCommand } from "../../api";
 import type { DeviceState } from "../../types";
 import { Btn } from "../common";
+import { MuteIcon, SourceMark, sourceLabel } from "../icons";
 
 const UPMIXERS = ["auto", "native", "dolby", "dts", "auro3d", "legacy"];
 
@@ -47,9 +48,13 @@ export function TrinnovView({ device }: { device?: DeviceState }) {
           <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
           <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
           <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2 dB</Btn>
-          <Btn active={muted} onClick={() => cmd("mute", { state: muted ? "off" : "on" })}>
-            {muted ? "Unmute" : "Mute"}
-          </Btn>
+          <button
+            className={`btn icon-btn ${muted ? "btn-active" : ""}`}
+            aria-label={muted ? "Unmute" : "Mute"}
+            onClick={() => cmd("mute", { state: muted ? "off" : "on" })}
+          >
+            <MuteIcon muted={muted} />
+          </button>
           <Btn active={dim} onClick={() => cmd("dim", { state: dim ? "off" : "on" })}>
             Dim
           </Btn>
@@ -58,11 +63,16 @@ export function TrinnovView({ device }: { device?: DeviceState }) {
 
       <section className="card">
         <div className="card-label">Source</div>
-        <div className="row btn-row wrap">
+        <div className="source-grid">
           {Object.keys(sources).map((name) => (
-            <Btn key={name} active={current === name} onClick={() => cmd("source", { name })}>
-              {name}
-            </Btn>
+            <button
+              key={name}
+              className={`source-card ${current === name ? "source-card-active" : ""}`}
+              onClick={() => cmd("source", { name })}
+            >
+              <SourceMark name={name} />
+              <span className="source-card-label">{sourceLabel(name)}</span>
+            </button>
           ))}
         </div>
       </section>
