@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { runScene } from "../api";
 import type { SceneProgress } from "../store";
 import type { StepStatus } from "../types";
@@ -43,6 +43,14 @@ export function SceneBar({
   markSceneStarted: (scene: string) => void;
 }) {
   const [source, setSource] = useState(defaultSource);
+
+  // ui-config loads asynchronously, so adopt the real default (and source list)
+  // once it arrives, without clobbering an explicit user selection.
+  useEffect(() => {
+    if (defaultSource) {
+      setSource((cur) => (sources.includes(cur) ? cur : defaultSource));
+    }
+  }, [defaultSource, sources]);
 
   const run = (scene: string, body: Record<string, unknown> = {}) => {
     markSceneStarted(scene);
