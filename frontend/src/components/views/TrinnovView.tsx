@@ -1,7 +1,7 @@
 import { sendCommand } from "../../api";
 import type { DeviceState } from "../../types";
 import { Btn } from "../common";
-import { MuteIcon, SourceMark, sourceLabel } from "../icons";
+import { MuteIcon, SourceMark } from "../icons";
 
 const UPMIXERS = ["auto", "native", "dolby", "dts", "auro3d", "legacy"];
 
@@ -69,9 +69,9 @@ export function TrinnovView({ device }: { device?: DeviceState }) {
               key={name}
               className={`source-card ${current === name ? "source-card-active" : ""}`}
               onClick={() => cmd("source", { name })}
+              title={name}
             >
               <SourceMark name={name} />
-              <span className="source-card-label">{sourceLabel(name)}</span>
             </button>
           ))}
         </div>

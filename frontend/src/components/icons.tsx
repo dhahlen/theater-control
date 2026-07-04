@@ -1,7 +1,5 @@
-import type { ReactNode } from "react";
 import nvidiaLogo from "../assets/sources/nvidia.svg";
 import rogLogo from "../assets/sources/rog.svg";
-import kaleidescapeLogo from "../assets/sources/kaleidescape.svg";
 
 export function MuteIcon({ muted, size = 22 }: { muted?: boolean; size?: number }) {
   return (
@@ -19,44 +17,34 @@ export function MuteIcon({ muted, size = 22 }: { muted?: boolean; size?: number 
   );
 }
 
-// Per-source display. A source maps to either a brand logo image or a short
-// monogram, plus a role label (Shield, PC, HTPC ...). Drop a logo file in
-// assets/sources and reference it here to add or replace a mark.
+// Per-source display. A source shows a brand logo (logo-only, no text) or, when
+// no logo fits, a short text label. Drop a logo file in assets/sources and map
+// it here to add or replace a source mark.
 interface SourceMeta {
-  label: string;
   logo?: string;
-  mark?: ReactNode;
-  color?: string;
+  text?: string;
+  label: string; // used for aria/title and as a fallback
 }
 
 const SOURCE_META: Record<string, SourceMeta> = {
-  shield: { label: "Shield", logo: nvidiaLogo },
-  kaleidescape: { label: "Kscape", logo: kaleidescapeLogo },
-  gaming_pc: { label: "PC", logo: rogLogo },
-  htpc: { label: "HTPC", mark: "HT", color: "#8a94a6" }, // Beelink logo pending
+  shield: { logo: nvidiaLogo, label: "Shield" },
+  kaleidescape: { text: "Kscape", label: "Kaleidescape" }, // symbol-only PNG pending
+  gaming_pc: { logo: rogLogo, label: "Gaming PC" },
+  htpc: { text: "HTPC", label: "HTPC" },
 };
 
 export function sourceLabel(name: string): string {
   return SOURCE_META[name]?.label ?? name;
 }
 
-export function SourceMark({ name, size = 32 }: { name: string; size?: number }) {
+export function SourceMark({ name }: { name: string }) {
   const meta = SOURCE_META[name];
   if (meta?.logo) {
     return (
-      <span className="source-mark source-mark-logo">
-        <img src={meta.logo} alt="" />
+      <span className="source-mark source-mark-logo" title={meta.label}>
+        <img src={meta.logo} alt={meta.label} />
       </span>
     );
   }
-  const text = meta?.mark ?? name.slice(0, 2).toUpperCase();
-  const color = meta?.color ?? "var(--accent)";
-  return (
-    <span
-      className="source-mark"
-      style={{ width: size, height: size, borderColor: color, color }}
-    >
-      {text}
-    </span>
-  );
+  return <span className="source-mark source-mark-text">{meta?.text ?? name.toUpperCase()}</span>;
 }
