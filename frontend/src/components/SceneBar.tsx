@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { runScene } from "../api";
-import { SourceMark } from "./icons";
+import { SourceMark, sourceLabel } from "./icons";
 import type { SceneProgress } from "../store";
 import type { StepStatus } from "../types";
 
@@ -70,13 +70,12 @@ export function SceneBar({
           disabled={onBusy}
         >
           <span className="scene-title">Theater On</span>
-          <span className="scene-sub">{onBusy ? "working…" : `source: ${source}`}</span>
+          <span className="scene-sub">{onBusy ? "working…" : `source: ${sourceLabel(source)}`}</span>
         </button>
         <Checklist progress={progress["theater-on"]} />
       </div>
 
       <div className="scene-source">
-        <span className="scene-source-label">Source</span>
         <div className="source-list">
           {sources.map((s) => (
             <button

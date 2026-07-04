@@ -1,7 +1,7 @@
 import { sendCommand } from "../api";
 import type { DeviceState } from "../types";
 import { Btn, Panel, Stat } from "./common";
-import { MuteIcon } from "./icons";
+import { MuteIcon, sourceLabel } from "./icons";
 
 export function TrinnovPanel({ device }: { device?: DeviceState }) {
   if (!device) return null;
@@ -20,7 +20,7 @@ export function TrinnovPanel({ device }: { device?: DeviceState }) {
         <Stat label="Mute" value={muted ? "ON" : "off"} />
       </div>
       <div className="row btn-row">
-        <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2 dB</Btn>
+        <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2</Btn>
         <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
         <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
         <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2</Btn>
@@ -36,7 +36,7 @@ export function TrinnovPanel({ device }: { device?: DeviceState }) {
       <div className="row btn-row wrap">
         {Object.keys(sources).map((name) => (
           <Btn key={name} onClick={() => cmd("source", { name })} active={current === name}>
-            {name}
+            {sourceLabel(name)}
           </Btn>
         ))}
       </div>

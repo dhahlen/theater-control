@@ -1,5 +1,6 @@
 import nvidiaLogo from "../assets/sources/nvidia.svg";
 import rogLogo from "../assets/sources/rog.svg";
+import kaleidescapeLogo from "../assets/sources/kaleidescape.png";
 
 export function MuteIcon({ muted, size = 22 }: { muted?: boolean; size?: number }) {
   return (
@@ -28,8 +29,8 @@ interface SourceMeta {
 
 const SOURCE_META: Record<string, SourceMeta> = {
   shield: { logo: nvidiaLogo, label: "Shield" },
-  kaleidescape: { text: "Kscape", label: "Kaleidescape" }, // symbol-only PNG pending
-  gaming_pc: { logo: rogLogo, label: "Gaming PC" },
+  kaleidescape: { logo: kaleidescapeLogo, label: "KScape" },
+  gaming_pc: { logo: rogLogo, label: "Game PC" },
   htpc: { text: "HTPC", label: "HTPC" },
 };
 
