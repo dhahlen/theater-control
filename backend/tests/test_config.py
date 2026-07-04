@@ -70,3 +70,43 @@ def test_missing_secret_raises(tmp_path):
     cfg = load_config(path)
     with pytest.raises(ConfigError):
         require_secret(cfg, "jvc_password")
+
+
+def test_loads_poolhouse_config(tmp_path, monkeypatch):
+    monkeypatch.setenv("HUE_POOLHOUSE_APP_KEY", "phkey")
+    monkeypatch.setenv("LG_CLIENT_KEY", "lgkey")
+    path = _write(tmp_path, """
+        plex:
+          base_url: "http://10.0.0.20:32400"
+        poolhouse:
+          trinnov:
+            host: "10.0.0.109"
+            sources:
+              shield: 0
+              gaming_pc: 1
+          hue:
+            bridge_ip: "10.0.0.184"
+            zones:
+              poolhouse:
+                group: "3"
+              office:
+                group: "1"
+                scenes:
+                  Dim: "sceneid1"
+          lg:
+            host: "10.0.0.224"
+            mac: "9C:6B:00:01:F1:D1"
+            inputs:
+              shield: "HDMI_1"
+          plex:
+            player_id: "abc-android"
+            player_name: "Pool House SHIELD"
+          default_source: "shield"
+    """)
+    cfg = load_config(path)
+    assert cfg.poolhouse.trinnov.host == "10.0.0.109"
+    assert cfg.poolhouse.hue.zones["office"].scenes["Dim"] == "sceneid1"
+    assert cfg.poolhouse.lg.mac == "9c-6b-00-01-f1-d1"
+    assert cfg.poolhouse.plex.player_id == "abc-android"
+    assert cfg.secrets.hue_poolhouse_app_key == "phkey"
+    assert cfg.secrets.lg_client_key == "lgkey"
