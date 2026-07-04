@@ -22,9 +22,9 @@ COPY --from=frontend-build /frontend/dist ./static
 # serves the SPA from /app/static.
 ENV STATIC_DIR=/app/static \
     DEVICES_CONFIG=/app/config/devices.yaml \
-    APP_PORT=8080
+    APP_PORT=8487
 
-EXPOSE 8080
+EXPOSE 8487
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD python -c "import urllib.request,os; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('APP_PORT','8080')+'/api/state')" || exit 1
 CMD ["sh", "-c", "uvicorn app.main:app --host ${APP_BIND_HOST:-0.0.0.0} --port ${APP_PORT:-8080}"]
