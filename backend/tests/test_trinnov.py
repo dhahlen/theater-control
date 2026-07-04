@@ -51,6 +51,26 @@ async def test_power_off_sends_secured_command():
     assert transport.sent == ["power_off_SECURED_FHZMCH48FE"]
 
 
+async def test_power_on_sends_wol_when_mac_configured(monkeypatch):
+    transport = FakeTransport()
+    adapter = TrinnovAdapter(
+        "trinnov", "10.0.0.3", sources=SOURCES, mac="64-98-9e-01-1b-ff", transport=transport
+    )
+    sent = {}
+    monkeypatch.setattr(
+        "backend.app.adapters.trinnov.send_magic_packet",
+        lambda mac, *a, **k: sent.setdefault("mac", mac),
+    )
+    await adapter.send("power", {"state": "on"})
+    assert sent["mac"] == "64-98-9e-01-1b-ff"
+
+
+async def test_power_on_without_mac_raises():
+    adapter, _ = _adapter()  # no mac configured
+    with pytest.raises(ValueError):
+        await adapter.send("power", {"state": "on"})
+
+
 async def test_inbound_status_updates_state():
     adapter, _ = _adapter()
     adapter._handle_line("Welcome on Trinnov Optimizer (Version 4.3.0, ID 12)")

@@ -57,6 +57,7 @@ class DeviceManager:
                 host=cfg.trinnov.host,
                 port=cfg.trinnov.port,
                 sources=cfg.trinnov.sources,
+                mac=cfg.trinnov.mac,
             )
         if cfg.madvr:
             self._adapters["madvr"] = MadvrAdapter(

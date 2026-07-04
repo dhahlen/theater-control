@@ -27,11 +27,30 @@ class JvcConfig(BaseModel):
     target_picture_mode: str = "frame_adapt_hdr"
 
 
+def _normalize_mac(value: str) -> str:
+    """Normalize a MAC to dash-separated lowercase, which Wake-on-LAN expects.
+
+    Accepts colon-, dash-, dot-, or no-separator input.
+    """
+
+    cleaned = value.replace(":", "").replace("-", "").replace(".", "").strip()
+    if len(cleaned) != 12 or not all(c in "0123456789abcdefABCDEF" for c in cleaned):
+        raise ValueError(f"invalid MAC address: {value!r}")
+    pairs = [cleaned[i : i + 2] for i in range(0, 12, 2)]
+    return "-".join(p.lower() for p in pairs)
+
+
 class TrinnovConfig(BaseModel):
     host: str
     port: int = 44100
     safe_max_volume: float = -20.0
     sources: dict[str, int] = Field(default_factory=dict)
+    mac: str | None = None  # optional; enables Wake-on-LAN power-on
+
+    @field_validator("mac")
+    @classmethod
+    def _validate_mac(cls, value: str | None) -> str | None:
+        return _normalize_mac(value) if value else None
 
 
 class MadvrConfig(BaseModel):
@@ -42,14 +61,8 @@ class MadvrConfig(BaseModel):
 
     @field_validator("mac")
     @classmethod
-    def _normalize_mac(cls, value: str) -> str:
-        # Accept colon-, dash-, or dot-separated MACs; store dash-separated,
-        # which is what the MadVR Wake-on-LAN expects.
-        cleaned = value.replace(":", "-").replace(".", "-").strip()
-        parts = cleaned.split("-")
-        if len(parts) != 6 or not all(len(p) == 2 for p in parts):
-            raise ValueError(f"invalid MAC address: {value!r}")
-        return "-".join(p.lower() for p in parts)
+    def _validate_mac(cls, value: str) -> str:
+        return _normalize_mac(value)
 
 
 class KaleidescapeConfig(BaseModel):
