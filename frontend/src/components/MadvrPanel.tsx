@@ -18,6 +18,13 @@ export function MadvrPanel({ device }: { device?: DeviceState }) {
       <div className="row">
         <Stat label="Aspect" value={signal.AspectRatio ?? "—"} />
       </div>
+      <div className="subhead">Aspect ratio mode</div>
+      <div className="row btn-row">
+        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "Auto" })}>Auto</Btn>
+        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "2.40:1" })}>2.40:1</Btn>
+        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "16:9" })}>16:9</Btn>
+        <Btn onClick={() => cmd("profile_cycle")}>Profile ⟳</Btn>
+      </div>
       <div className="dpad">
         <div />
         <Btn onClick={() => key("UP")}>▲</Btn>

@@ -231,9 +231,24 @@ async def _set_picture_mode(jvc: Any, progress: _Progress, config: dict[str, Any
 async def _activate_madvr_profile(
     madvr: Any, progress: _Progress, source: str, config: dict[str, Any]
 ) -> None:
-    profiles = (config.get("madvr") or {}).get("profiles") or {}
-    profile = profiles.get(source)
+    madvr_cfg = config.get("madvr") or {}
+    macros = madvr_cfg.get("profile_macros") or {}
+    profiles = madvr_cfg.get("profiles") or {}
     step = await progress.start("madvr_profile", "Activating MadVR profile")
+
+    # Preferred: a per-source macro (aspect-ratio mode plus GREEN profile cycling
+    # on this Envy). Fall back to a stored settings slot, then to auto profiles.
+    if macros.get(source) and hasattr(madvr, "run_profile_macro"):
+        try:
+            executed = await madvr.run_profile_macro(source)
+            await progress.finish(
+                step, StepStatus.SENT_UNCONFIRMED, f"macro: {', '.join(executed)}"
+            )
+        except Exception as exc:
+            await progress.finish(step, StepStatus.FAILED, f"profile macro failed: {exc}")
+        return
+
+    profile = profiles.get(source)
     if not profile:
         # Recommended default: the Envy applies automatic profiles by signal.
         await progress.finish(

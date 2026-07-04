@@ -43,6 +43,7 @@ All commands are sent with a trailing `\n`. Arguments shown in angle brackets.
 | Temperatures | `GetTemperatures` | Thermal telemetry. |
 | Remote key press | `KeyPress <BUTTON>` | Momentary press. |
 | Remote key hold | `KeyHold <BUTTON>` | Press-and-hold (auto-repeat handled client-side). |
+| Set aspect ratio mode | `SetAspectRatioMode <mode>` | For example `Auto`, `2.40:1`, `16:9`. Deterministic. |
 | Enumerate 3DLUTs | `Enum3DLUTFiles` | Streams `3DLUTFile ...` lines, ends with `3DLUTFile.`. |
 | Store settings (named) | `StoreSettings Installer "<name>" "<password>"` | Also `Suggested`, or `StoreSettings <slot 1-16> "<name>"`. |
 | Restore settings | `RestoreSettings Installer` | Also `Suggested` or `<slot 1-16>`. |
@@ -62,6 +63,10 @@ The Envy's own profile mechanism is what activates the correct picture settings 
 2. Explicit: use a stored settings slot or a `KeyPress` menu macro to force a specific profile. If you use stored slots, map `source -> slot` in config and issue `RestoreSettings <slot>`. Confirm the exact profile-activation command against the full Envy IP Control reference guide (the reference sample covers settings slots and remote keys; per-profile activation may use a documented command available in the newest firmware).
 
 Treat the exact per-profile activation token as the one item to confirm against the current Envy IP Control reference guide. Everything else above is confirmed from the vendor source.
+
+### Resolved: per-source profile via a configurable macro
+
+Confirmed against this installation's Envy and its customized IP Control source: there is no single "activate profile N" token here. The `GREEN` remote key is configured to cycle the three picture profiles, and `SetAspectRatioMode <mode>` sets the aspect deterministically. To support both without hard-coding one site's layout, the adapter runs a per-source macro from `config/devices.yaml` (`madvr.profile_macros`): an ordered list of raw Envy command lines, plus a `Delay <ms>` pseudo-command to pace multi-step sequences (for example between `KeyPress GREEN` cycles). Allowed macro verbs are `SetAspectRatioMode`, `KeyPress`, `KeyHold`, and `RestoreSettings`. When no macro is configured, the routine falls back to a stored settings slot, then to the Envy's automatic signal-driven profiles. Because `GREEN` cycling is state-dependent, prefer `SetAspectRatioMode` for deterministic results and confirm the cycle position before relying on a fixed number of `GREEN` presses.
 
 ## Adapter Requirements
 

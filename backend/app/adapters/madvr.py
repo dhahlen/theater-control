@@ -39,6 +39,13 @@ REMOTE_BUTTONS = [
     "MAGENTA", "CYAN",
 ]
 
+# Aspect-ratio modes accepted by SetAspectRatioMode.
+ASPECT_MODES = ["Auto", "2.40:1", "2.35:1", "2.20:1", "1.85:1", "16:9", "4:3"]
+
+# Command verbs a profile macro is allowed to send, so a config typo cannot push
+# an arbitrary or destructive command at the Envy.
+MACRO_VERBS = {"SetAspectRatioMode", "KeyPress", "KeyHold", "RestoreSettings"}
+
 # Query commands and the response keyword each returns.
 QUERY_COMMANDS = {
     "GetIncomingSignalInfo": "IncomingSignalInfo",
@@ -56,6 +63,7 @@ class MadvrAdapter(DeviceAdapter):
         mac: str,
         port: int = MADVR_PORT,
         heartbeat_seconds: int = DEFAULT_HEARTBEAT_S,
+        profile_macros: dict[str, list[str]] | None = None,
         transport: LineTransport | None = None,
     ) -> None:
         self.device_id = device_id
@@ -63,6 +71,7 @@ class MadvrAdapter(DeviceAdapter):
         self._port = port
         self._mac = mac  # dash-separated, used for WoL
         self._heartbeat_seconds = heartbeat_seconds
+        self._profile_macros = dict(profile_macros or {})
         self._transport = transport
 
         self._signal: dict[str, str] = {}
@@ -179,6 +188,16 @@ class MadvrAdapter(DeviceAdapter):
             verb = "KeyPress" if command == "key_press" else "KeyHold"
             await self._send_raw(f"{verb} {button}")
             return {"button": button}
+        if command == "set_aspect_ratio_mode":
+            mode = params.get("mode")
+            if mode not in ASPECT_MODES:
+                raise ValueError(f"mode must be one of {ASPECT_MODES}, got {mode!r}")
+            await self._send_raw(f"SetAspectRatioMode {mode}")
+            return {"aspect_ratio_mode": mode}
+        if command == "profile_cycle":
+            # This Envy is configured so GREEN cycles the picture profiles.
+            await self._send_raw("KeyPress GREEN")
+            return {"profile": "cycled"}
         if command == "restore_settings":
             target = params.get("target")
             if not target:
@@ -195,6 +214,34 @@ class MadvrAdapter(DeviceAdapter):
             raise ConnectionError("madvr transport not started")
         await self._transport.send_line(line)
 
+    def has_profile_macro(self, source: str) -> bool:
+        return bool(self._profile_macros.get(source))
+
+    async def run_profile_macro(self, source: str) -> list[str]:
+        """Run the configured profile macro for a source.
+
+        Each entry is a raw Envy command line (verb whitelisted), except the
+        pseudo-command ``Delay <ms>`` which pauses client-side to pace a
+        multi-step sequence (for example between GREEN profile cycles).
+        """
+
+        macro = self._profile_macros.get(source) or []
+        executed: list[str] = []
+        for line in macro:
+            verb, _, rest = line.strip().partition(" ")
+            if verb in ("Delay", "Wait"):
+                await asyncio.sleep(float(rest) / 1000.0)
+                executed.append(line)
+                continue
+            if verb not in MACRO_VERBS:
+                raise ValueError(
+                    f"macro command {verb!r} not allowed; permitted: "
+                    f"{sorted(MACRO_VERBS)} plus Delay <ms>"
+                )
+            await self._send_raw(line)
+            executed.append(line)
+        return executed
+
     # -- capabilities -----------------------------------------------------
 
     def capabilities(self) -> list[Capability]:
@@ -205,6 +252,8 @@ class MadvrAdapter(DeviceAdapter):
             Capability("restart", {}, "Restart over IP (Restart)"),
             Capability("key_press", {"button": REMOTE_BUTTONS}, "Remote key press"),
             Capability("key_hold", {"button": REMOTE_BUTTONS}, "Remote key hold"),
+            Capability("set_aspect_ratio_mode", {"mode": ASPECT_MODES}, "Set aspect ratio mode"),
+            Capability("profile_cycle", {}, "Cycle picture profile (GREEN)"),
             Capability(
                 "restore_settings",
                 {"target": ["Installer", "Suggested", *[str(i) for i in range(1, 17)]]},

@@ -57,3 +57,43 @@ async def test_get_status_queries_signal():
     adapter, transport = _adapter()
     await adapter.get_status()
     assert "GetIncomingSignalInfo" in transport.sent
+
+
+async def test_set_aspect_ratio_mode():
+    adapter, transport = _adapter()
+    await adapter.send("set_aspect_ratio_mode", {"mode": "2.40:1"})
+    assert transport.sent == ["SetAspectRatioMode 2.40:1"]
+    with pytest.raises(ValueError):
+        await adapter.send("set_aspect_ratio_mode", {"mode": "banana"})
+
+
+async def test_profile_cycle_presses_green():
+    adapter, transport = _adapter()
+    await adapter.send("profile_cycle", {})
+    assert transport.sent == ["KeyPress GREEN"]
+
+
+async def test_profile_macro_runs_lines_and_delay(monkeypatch):
+    transport = FakeTransport()
+    macro = {"movie": ["SetAspectRatioMode 2.40:1", "Delay 200", "KeyPress GREEN"]}
+    adapter = MadvrAdapter("madvr", "10.0.0.4", mac=MAC, profile_macros=macro,
+                           transport=transport)
+    slept = {}
+    async def _sleep(sec):
+        slept["sec"] = sec
+    monkeypatch.setattr("backend.app.adapters.madvr.asyncio.sleep", _sleep)
+
+    assert adapter.has_profile_macro("movie") is True
+    executed = await adapter.run_profile_macro("movie")
+    assert transport.sent == ["SetAspectRatioMode 2.40:1", "KeyPress GREEN"]
+    assert slept["sec"] == 0.2
+    assert executed == ["SetAspectRatioMode 2.40:1", "Delay 200", "KeyPress GREEN"]
+
+
+async def test_profile_macro_rejects_unlisted_verb():
+    transport = FakeTransport()
+    adapter = MadvrAdapter("madvr", "10.0.0.4", mac=MAC,
+                           profile_macros={"x": ["PowerOff"]}, transport=transport)
+    with pytest.raises(ValueError):
+        await adapter.run_profile_macro("x")
+    assert transport.sent == []

@@ -24,10 +24,21 @@ madvr:
   host: "192.168.1.12"
   port: 44077
   mac: "00:11:22:33:44:55"    # required for Wake-on-LAN power on
-  profiles:                   # source_name: profile identifier / activation command
-    kaleidescape: "profile_movies"
-    plex: "profile_movies"
-    gaming_pc: "profile_game"
+  heartbeat_seconds: 5
+  profiles:                   # source_name: stored settings slot (fallback path)
+    kaleidescape: "1"
+    plex: "1"
+    gaming_pc: "2"
+  # Preferred per-source profile setup run by Theater On: an ordered list of raw
+  # Envy command lines. "Delay <ms>" paces multi-step sequences. Allowed verbs:
+  # SetAspectRatioMode, KeyPress, KeyHold, RestoreSettings. On Envys where GREEN
+  # cycles picture profiles, combine SetAspectRatioMode (deterministic) with
+  # KeyPress GREEN. Omit to fall back to profiles/slots, then Envy auto profiles.
+  profile_macros:
+    kaleidescape:
+      - "SetAspectRatioMode 2.40:1"
+    gaming_pc:
+      - "SetAspectRatioMode 16:9"
 
 kaleidescape:
   host: "192.168.1.13"

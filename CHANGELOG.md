@@ -17,6 +17,7 @@ All notable changes to this project are documented in this file. This project fo
 
 ### Confirmed
 
+- MadVR Envy profile activation resolved (previously the one open item): the adapter runs a per-source macro of raw Envy command lines (`madvr.profile_macros`) with a `Delay <ms>` pseudo-command, covering `SetAspectRatioMode` and `GREEN`-key profile cycling on customized Envys, with fallbacks to stored slots and automatic profiles. Adds `set_aspect_ratio_mode` and `profile_cycle` MadVR commands and controls in the UI.
 - Trinnov command and status tokens verified against the community `trinnov-altitude` library: absolute volume (`volume <db>`), relative volume (`dvolume`), mute (`mute 0|1`), source select (`profile <id>`), the `id` registration handshake, and the `VOLUME`/`MUTE`/`CURRENT_PROFILE` broadcasts.
 - Kaleidescape command tokens and message framing verified against the `pykaleidescape` library (`<cpdid>/<seq>/<COMMAND>:` frames, CR-terminated).
 

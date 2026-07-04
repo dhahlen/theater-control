@@ -57,7 +57,12 @@ class MadvrConfig(BaseModel):
     host: str
     port: int = 44077
     mac: str
+    heartbeat_seconds: int = 5
     profiles: dict[str, str] = Field(default_factory=dict)
+    # Per-source list of raw Envy command lines run by Theater On to select the
+    # picture profile (for example an aspect-ratio mode plus GREEN key cycling).
+    # Supports a pseudo-command "Delay <ms>" to pace multi-step sequences.
+    profile_macros: dict[str, list[str]] = Field(default_factory=dict)
 
     @field_validator("mac")
     @classmethod

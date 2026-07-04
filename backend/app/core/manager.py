@@ -65,6 +65,8 @@ class DeviceManager:
                 host=cfg.madvr.host,
                 mac=cfg.madvr.mac,
                 port=cfg.madvr.port,
+                heartbeat_seconds=cfg.madvr.heartbeat_seconds,
+                profile_macros=cfg.madvr.profile_macros,
             )
         if cfg.hue:
             self._adapters["hue"] = HueAdapter(
