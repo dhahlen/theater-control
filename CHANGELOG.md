@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file. This project fo
 
 ### Changed
 
+- More iPad-fit polish: the dashboard MadVR card is now status-only (the full remote lives on the MadVR tab), fixing the bottom cutoff and keeping the Theater tab from scrolling; the MadVR tab is two columns with a sticky remote that stays put while the rest scrolls; the JVC picture-mode buttons are a proper grid (no overlap); source buttons use real brand logos (Nvidia, ROG, Kaleidescape) with role labels in uniform vertical cards; Kaleidescape is shortened to "Kscape"; and the Theater On/Off buttons are slightly smaller.
+
 - iPad-fit and touch polish: the mute control is now a speaker icon that reflects mute state (fixing the cut-off "Unmute" button on the main screen), the Trinnov source selector uses spacious icon cards instead of bunched buttons, source chips/cards carry per-source marks (Shield, Kaleidescape, PC, HTPC), and the MadVR view is a two-column layout with the remote on the side so the page no longer scrolls on an 11-inch iPad.
 
 ### Added

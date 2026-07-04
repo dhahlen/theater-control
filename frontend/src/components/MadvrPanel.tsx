@@ -1,14 +1,12 @@
-import { sendCommand } from "../api";
 import type { DeviceState } from "../types";
-import { Btn, Panel, Stat } from "./common";
+import { Panel, Stat } from "./common";
 
+// Dashboard card: status only. The full remote and controls live on the MadVR
+// tab, which keeps this card short so the main Theater tab never scrolls.
 export function MadvrPanel({ device }: { device?: DeviceState }) {
   if (!device) return null;
   const signal = (device.extra?.signal as Record<string, string>) ?? {};
-
-  const cmd = (command: string, params?: Record<string, unknown>) =>
-    sendCommand("madvr", command, params).catch((e) => console.error(e));
-  const key = (button: string) => cmd("key_press", { button });
+  const temps = (device.extra?.temperatures as Record<string, number>) ?? {};
 
   return (
     <Panel title="MadVR Envy" device={device}>
@@ -16,31 +14,11 @@ export function MadvrPanel({ device }: { device?: DeviceState }) {
         <Stat label="Incoming" value={signal.IncomingSignalInfo ?? "—"} />
       </div>
       <div className="row">
+        <Stat label="Outgoing" value={signal.OutgoingSignalInfo ?? "—"} />
+      </div>
+      <div className="row">
         <Stat label="Aspect" value={signal.AspectRatio ?? "—"} />
-      </div>
-      <div className="subhead">Aspect ratio mode</div>
-      <div className="row btn-row">
-        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "Auto" })}>Auto</Btn>
-        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "2.40:1" })}>2.40:1</Btn>
-        <Btn onClick={() => cmd("set_aspect_ratio_mode", { mode: "16:9" })}>16:9</Btn>
-        <Btn onClick={() => cmd("profile_cycle")}>Profile ⟳</Btn>
-      </div>
-      <div className="dpad">
-        <div />
-        <Btn onClick={() => key("UP")}>▲</Btn>
-        <div />
-        <Btn onClick={() => key("LEFT")}>◀</Btn>
-        <Btn onClick={() => key("OK")}>OK</Btn>
-        <Btn onClick={() => key("RIGHT")}>▶</Btn>
-        <div />
-        <Btn onClick={() => key("DOWN")}>▼</Btn>
-        <div />
-      </div>
-      <div className="row btn-row">
-        <Btn onClick={() => key("MENU")}>Menu</Btn>
-        <Btn onClick={() => key("SETTINGS")}>Settings</Btn>
-        <Btn onClick={() => key("INFO")}>Info</Btn>
-        <Btn onClick={() => key("BACK")}>Back</Btn>
+        <Stat label="GPU" value={temps.gpu !== undefined ? `${temps.gpu}°C` : "—"} />
       </div>
     </Panel>
   );
