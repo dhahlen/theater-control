@@ -11,7 +11,7 @@ import { JvcPanel } from "./components/JvcPanel";
 import { TrinnovView } from "./components/views/TrinnovView";
 import { MadvrView } from "./components/views/MadvrView";
 import { JvcView } from "./components/views/JvcView";
-import { PoolHouseView } from "./components/views/PoolHouseView";
+import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
 import type { Room } from "./components/RoomSwitcher";
 
 interface UiConfig {
@@ -53,7 +53,7 @@ export function App() {
     return (
       <div className="app">
         <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} />
-        <PoolHouseView />
+        <PoolHouseRoom />
       </div>
     );
   }
