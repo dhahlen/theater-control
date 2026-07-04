@@ -27,22 +27,83 @@ from .base import Capability, DeviceAdapter, DeviceStatus, Reachability
 log = logging.getLogger("theater.lg")
 
 # Permissions manifest sent with the register request. Trimmed to the handshake
-# webOS requires to grant control; the TV pairs on the client-key it returns.
+# webOS grants full control only for its complete signed manifest; a trimmed
+# manifest yields a restricted client key that 401s on audio/app queries. This is
+# the canonical LG registration payload (as used by lgtv2 / PyWebOSTV), including
+# the standard signature block that unlocks the requested permissions.
 REGISTER_MANIFEST: dict[str, Any] = {
     "forcePairing": False,
     "pairingType": "PROMPT",
     "manifest": {
         "manifestVersion": 1,
+        "appVersion": "1.1",
+        "signed": {
+            "created": "20140509",
+            "appId": "com.lge.test",
+            "vendorId": "com.lge",
+            "localizedAppNames": {
+                "": "LG Remote App",
+                "ko-KR": "리모컨 앱",
+                "zxx-XX": "ЛГ Rэмotэ AПП",
+            },
+            "localizedVendorNames": {"": "LG Electronics"},
+            "permissions": [
+                "TEST_SECURE",
+                "CONTROL_INPUT_TEXT",
+                "CONTROL_MOUSE_AND_KEYBOARD",
+                "READ_INSTALLED_APPS",
+                "READ_LGE_SDX",
+                "READ_NOTIFICATIONS",
+                "SEARCH",
+                "WRITE_SETTINGS",
+                "WRITE_NOTIFICATION_ALERT",
+                "CONTROL_POWER",
+                "READ_CURRENT_CHANNEL",
+                "READ_RUNNING_APPS",
+                "READ_UPDATE_INFO",
+                "UPDATE_FROM_REMOTE_APP",
+                "READ_LGE_TV_INPUT_EVENTS",
+                "READ_TV_CURRENT_TIME",
+            ],
+            "serial": "2f930e2d2cfe083771f68e4fe7bb07",
+        },
         "permissions": [
-            "CONTROL_POWER",
+            "LAUNCH",
+            "LAUNCH_WEBAPP",
+            "APP_TO_APP",
+            "CLOSE",
+            "TEST_OPEN",
+            "TEST_PROTECTED",
             "CONTROL_AUDIO",
+            "CONTROL_DISPLAY",
+            "CONTROL_INPUT_JOYSTICK",
+            "CONTROL_INPUT_MEDIA_RECORDING",
             "CONTROL_INPUT_MEDIA_PLAYBACK",
             "CONTROL_INPUT_TV",
-            "READ_TV_CURRENT_CHANNEL",
-            "READ_POWER_STATE",
+            "CONTROL_POWER",
+            "READ_APP_STATUS",
             "READ_CURRENT_CHANNEL",
             "READ_INPUT_DEVICE_LIST",
-            "WRITE_SETTINGS",
+            "READ_NETWORK_STATE",
+            "READ_RUNNING_APPS",
+            "READ_TV_CHANNEL_LIST",
+            "WRITE_NOTIFICATION_TOAST",
+            "READ_POWER_STATE",
+            "READ_COUNTRY_INFO",
+        ],
+        "signatures": [
+            {
+                "signatureVersion": 1,
+                "signature": (
+                    "eyJhbGdvcml0aG0iOiJSU0EtU0hBMjU2Iiwia2V5SWQiOiJ0ZXN0LXNpZ25pbmctY2Vy"
+                    "dCIsInNpZ25hdHVyZVZlcnNpb24iOjF9.hrVRgjCwXVvE2OOSpDZ58hR-59aFNwYDyjQg"
+                    "Kk3auukd7pcegmE2CzPCa0bJ0ZsRAcKkCTJrWo5iDzNhMBWRyaMOv5zWSrthlf7G128qv"
+                    "IlpMT0YNY-n_FaOHE73uLrS_g7swl3_qH_BGFG2Hu4RlL48eb3lLKqTt2xKHdCs6Cd4RM"
+                    "fJPYnzgvI4BNrFUKsjkcu-WD4OO2A27Pq1n50cMchmcaXadJhGrOqH5YmHdOCj5NSHzJY"
+                    "rsW0HPlpuAx_ECMeIZYDh6RMqaFM2DXzdKX9NmmyqzJ3o_0lkk_N97gfVRLW5hA29yeAw"
+                    "aCViZNCP8iC9aO0q9fQojoa7NQnAtw"
+                ),
+            }
         ],
     },
 }
@@ -295,12 +356,16 @@ class LgAdapter(DeviceAdapter):
             vol = await self._request("ssap://audio/getVolume")
             extra["volume"] = vol.get("volume")
             extra["mute"] = vol.get("muted", vol.get("mute"))
-            app = await self._request("ssap://com.webos.applicationManager/getForegroundAppInfo")
-            extra["app_id"] = app.get("appId")
             self._power = "on"
         except Exception as exc:
             log.debug("lg %s status failed: %s", self.device_id, exc)
             return DeviceStatus(device_id=self.device_id, reachable=Reachability.OFFLINE)
+        # Best-effort: don't drop the device offline if this one query is refused.
+        try:
+            app = await self._request("ssap://com.webos.applicationManager/getForegroundAppInfo")
+            extra["app_id"] = app.get("appId")
+        except Exception as exc:
+            log.debug("lg %s app info unavailable: %s", self.device_id, exc)
         return DeviceStatus(
             device_id=self.device_id,
             reachable=Reachability.ONLINE,
