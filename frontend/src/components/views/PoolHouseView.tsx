@@ -9,7 +9,10 @@ import { MuteIcon, SourceMark, sourceLabel } from "../icons";
 // iPad before the hardware integration lands. Nothing here talks to a device.
 
 const SOURCES = ["shield", "gaming_pc", "switch2", "switch1", "node"];
-const SCENES = ["Movie", "Party", "Chill", "Off"];
+// Real scene names from the Office/Pool House Hue bridge (172.16.17.184).
+const SCENES = ["Dim", "Dim - Strip only", "Bright White"];
+// LG webOS picture presets.
+const PICTURE_MODES = ["Filmmaker", "Cinema", "Vivid", "Standard", "Game"];
 
 export function PoolHouseView() {
   const [power, setPower] = useState(false);
@@ -17,7 +20,8 @@ export function PoolHouseView() {
   const [volume, setVolume] = useState(-22);
   const [muted, setMuted] = useState(false);
   const [bri, setBri] = useState(140);
-  const [scene, setScene] = useState("Chill");
+  const [scene, setScene] = useState("Dim");
+  const [picture, setPicture] = useState("Filmmaker");
 
   const nudge = (d: number) => setVolume((v) => Math.max(-60, Math.min(0, Math.round((v + d) * 2) / 2)));
 
@@ -76,7 +80,19 @@ export function PoolHouseView() {
           <div className="info-grid">
             <div><span className="muted">Input</span><strong>HDMI 1</strong></div>
             <div><span className="muted">Source</span><strong>{sourceLabel(source)}</strong></div>
-            <div><span className="muted">Picture</span><strong>Filmmaker</strong></div>
+            <div><span className="muted">Picture</span><strong>{picture}</strong></div>
+          </div>
+          <div className="subhead">Picture mode</div>
+          <div className="mode-grid">
+            {PICTURE_MODES.map((m) => (
+              <button
+                key={m}
+                className={`btn mode-btn ${picture === m ? "btn-active" : ""}`}
+                onClick={() => setPicture(m)}
+              >
+                {m}
+              </button>
+            ))}
           </div>
           <div className="subhead">Power</div>
           <div className="row btn-row">
