@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Changed
+
+- Plex media panel no longer embeds the full Plex Web app. It shows a rich now-playing card only while something is playing (cover art, ratings, format badges for resolution/HDR/codecs/container/frame rate/bitrate/direct-play, scrub bar, play/pause/stop, and synopsis), and a clean idle state with an optional "Open Plex Web" link otherwise. The adapter now also parses episode label, content rating, runtime, genres, ratings, and HDR dynamic range from `/status/sessions`.
+
 ## [0.1.0] - 2026-07-04
 
 First working release: the full phase 1 application (backend, adapters,

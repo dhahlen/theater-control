@@ -72,6 +72,37 @@ async def test_now_playing_extracts_rich_details():
     assert np["transcoding"] is False
 
 
+EPISODE = {
+    "type": "episode", "title": "Home", "grandparentTitle": "The Expanse",
+    "parentIndex": 2, "index": 4, "year": 2017, "contentRating": "TV-14",
+    "duration": 3600000, "viewOffset": 1643000,
+    "Genre": [{"tag": "Drama"}, {"tag": "Sci-Fi"}, {"tag": "Mystery"}, {"tag": "Extra"}],
+    "Rating": [
+        {"image": "imdb://image.rating", "value": 8.0},
+        {"image": "themoviedb://image.rating", "value": 8.0},
+        {"image": "rottentomatoes://image.rating.ripe", "value": 8.8},
+    ],
+    "Media": [{
+        "bitrate": 30000, "videoResolution": "4k", "videoCodec": "hevc",
+        "audioCodec": "dca", "audioChannels": 6, "container": "mkv",
+        "videoFrameRate": "24p",
+        "Part": [{"file": "/tv/Expanse/S02E04.mkv", "size": 8000000000,
+                  "Stream": [{"streamType": 1, "colorTrc": "smpte2084"}]}],
+    }],
+}
+
+
+async def test_now_playing_episode_ratings_genres_hdr():
+    adapter, _ = _adapter({"MediaContainer": {"size": 1, "Metadata": [EPISODE]}})
+    np = (await adapter.get_status()).extra["now_playing"]
+    assert np["episode"] == "S02E04"
+    assert np["runtime_min"] == 60
+    assert np["genres"] == ["Drama", "Sci-Fi", "Mystery"]      # capped at 3
+    assert np["dynamic_range"] == "HDR10"
+    assert {"source": "IMDb", "value": 8.0} in np["ratings"]
+    assert {"source": "RT", "value": 8.8} in np["ratings"]
+
+
 async def test_no_sessions_is_none():
     adapter, _ = _adapter({"MediaContainer": {"size": 0}})
     status = await adapter.get_status()
