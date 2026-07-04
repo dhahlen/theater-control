@@ -83,7 +83,38 @@ async def test_inbound_status_updates_state():
     assert status.input == "plex"  # id 1 maps to friendly name
 
 
-async def test_registers_on_connect():
+async def test_registers_and_requests_presets_on_connect():
     adapter, transport = _adapter()
     await adapter._on_connect()
-    assert transport.sent == ["id theater-control"]
+    assert transport.sent == ["id theater-control", "get_all_label", "get_current_preset"]
+
+
+async def test_preset_upmixer_dim_bypass_commands():
+    adapter, transport = _adapter()
+    await adapter.send("preset", {"index": 9})
+    await adapter.send("upmixer", {"mode": "auto"})
+    await adapter.send("dim", {"state": "on"})
+    await adapter.send("bypass", {"state": "off"})
+    assert transport.sent == ["loadp 9", "upmixer auto", "dim 1", "bypass 0"]
+
+
+async def test_upmixer_validates_mode():
+    adapter, _ = _adapter()
+    with pytest.raises(ValueError):
+        await adapter.send("upmixer", {"mode": "nope"})
+
+
+async def test_inbound_presets_and_modes():
+    adapter, _ = _adapter()
+    adapter._handle_line("LABEL 0: Movie Reference")
+    adapter._handle_line("LABEL 1: Music")
+    adapter._handle_line("CURRENT_PRESET 0")
+    adapter._handle_line("UPMIXER auto")
+    adapter._handle_line("DIM 1")
+    adapter._handle_line("CURRENT_SOURCE_FORMAT_NAME DTS-HD Master Audio")
+    status = await adapter.get_status()
+    assert status.extra["presets"] == {"0": "Movie Reference", "1": "Music"}
+    assert status.extra["current_preset"] == 0
+    assert status.extra["upmixer"] == "auto"
+    assert status.extra["dim"] is True
+    assert status.extra["source_format"] == "DTS-HD Master Audio"
