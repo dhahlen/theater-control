@@ -75,6 +75,7 @@ class MadvrAdapter(DeviceAdapter):
         self._transport = transport
 
         self._signal: dict[str, str] = {}
+        self._temperatures: dict[str, int] = {}
         self._heartbeat_task: asyncio.Task[None] | None = None
 
     # -- lifecycle --------------------------------------------------------
@@ -131,6 +132,10 @@ class MadvrAdapter(DeviceAdapter):
         if keyword == "MacAddress" and rest:
             self._mac = rest.strip().replace(":", "-")
             return
+        if keyword == "Temperatures":
+            self._temperatures = _parse_temperatures(rest)
+            self._signal[keyword] = rest.strip()
+            return
         if keyword in QUERY_COMMANDS.values():
             self._signal[keyword] = rest.strip()
 
@@ -161,6 +166,7 @@ class MadvrAdapter(DeviceAdapter):
             extra={
                 "mac": self._mac,
                 "signal": dict(self._signal),
+                "temperatures": dict(self._temperatures),
             },
         )
 
@@ -260,3 +266,18 @@ class MadvrAdapter(DeviceAdapter):
                 "Restore a stored settings slot/profile",
             ),
         ]
+
+
+# The Envy's GetTemperatures reply is four Celsius integers: GPU, HDMI, CPU,
+# mainboard (per the vendor reference and py-madvr).
+_TEMP_LABELS = ("gpu", "hdmi", "cpu", "mainboard")
+
+
+def _parse_temperatures(rest: str) -> dict[str, int]:
+    values: list[int] = []
+    for token in rest.split():
+        try:
+            values.append(int(float(token)))
+        except ValueError:
+            continue
+    return {label: value for label, value in zip(_TEMP_LABELS, values)}

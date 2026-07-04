@@ -41,6 +41,16 @@ _VOLUME = re.compile(r"^VOLUME\s(-?\d+(?:\.\d+)?)$")
 _MUTE = re.compile(r"^MUTE\s(0|1)$")
 _CURRENT_PROFILE = re.compile(r"^CURRENT_PROFILE\s(-?\d+)$")
 _PROFILE_LABEL = re.compile(r"^PROFILE\s(-?\d+): (.*)$")
+_CURRENT_PRESET = re.compile(r"^CURRENT_PRESET\s(-?\d+)$")
+_PRESET_LABEL = re.compile(r"^LABEL\s(-?\d+): (.*)$")
+_UPMIXER = re.compile(r"^UPMIXER\s(.*)$")
+_DIM = re.compile(r"^DIM\s(-?\d+)$")
+_BYPASS = re.compile(r"^BYPASS\s(0|1)$")
+_SRATE = re.compile(r"^SRATE\s(\d+)$")
+_SOURCE_FORMAT = re.compile(r"^CURRENT_SOURCE_FORMAT_NAME\s(.*)$")
+
+# Upmixer modes accepted by the "upmixer <mode>" command.
+UPMIXER_MODES = ["auto", "native", "dolby", "dts", "auro3d", "legacy", "upmix on native"]
 
 
 class TrinnovAdapter(DeviceAdapter):
@@ -68,6 +78,13 @@ class TrinnovAdapter(DeviceAdapter):
         self._source_index: int | None = None
         self._labels: dict[int, str] = {}
         self._power = "on"  # assume on once connected; Trinnov has no clean read
+        self._presets: dict[int, str] = {}
+        self._current_preset: int | None = None
+        self._upmixer: str | None = None
+        self._dim: bool | None = None
+        self._bypass: bool | None = None
+        self._srate: int | None = None
+        self._source_format: str | None = None
 
     # -- lifecycle --------------------------------------------------------
 
@@ -87,8 +104,10 @@ class TrinnovAdapter(DeviceAdapter):
             await self._transport.stop()
 
     async def _on_connect(self) -> None:
-        # Register so the processor streams state to us.
+        # Register so the processor streams state to us, then prime preset list.
         await self._transport.send_line(f"id {self._client_id}")
+        await self._transport.send_line("get_all_label")
+        await self._transport.send_line("get_current_preset")
 
     # -- inbound parsing --------------------------------------------------
 
@@ -104,6 +123,27 @@ class TrinnovAdapter(DeviceAdapter):
             return
         if m := _CURRENT_PROFILE.match(line):
             self._source_index = int(m.group(1))
+            return
+        if m := _CURRENT_PRESET.match(line):
+            self._current_preset = int(m.group(1))
+            return
+        if m := _PRESET_LABEL.match(line):
+            self._presets[int(m.group(1))] = m.group(2)
+            return
+        if m := _UPMIXER.match(line):
+            self._upmixer = m.group(1).strip()
+            return
+        if m := _DIM.match(line):
+            self._dim = bool(int(m.group(1)))
+            return
+        if m := _BYPASS.match(line):
+            self._bypass = bool(int(m.group(1)))
+            return
+        if m := _SRATE.match(line):
+            self._srate = int(m.group(1))
+            return
+        if m := _SOURCE_FORMAT.match(line):
+            self._source_format = m.group(1).strip()
             return
         if m := _PROFILE_LABEL.match(line):
             self._labels[int(m.group(1))] = m.group(2)
@@ -128,6 +168,13 @@ class TrinnovAdapter(DeviceAdapter):
                 "mute": self._mute,
                 "source_index": self._source_index,
                 "sources": self._sources,
+                "presets": {str(k): v for k, v in self._presets.items()},
+                "current_preset": self._current_preset,
+                "upmixer": self._upmixer,
+                "dim": self._dim,
+                "bypass": self._bypass,
+                "sample_rate": self._srate,
+                "source_format": self._source_format,
             },
         )
 
@@ -173,6 +220,37 @@ class TrinnovAdapter(DeviceAdapter):
             await self._send(f"profile {source_id}")
             return {"source_index": source_id}
 
+        if command == "preset":
+            if "index" not in params:
+                raise ValueError("preset requires an 'index'")
+            index = int(params["index"])
+            await self._send(f"loadp {index}")
+            return {"preset": index}
+
+        if command == "upmixer":
+            mode = params.get("mode")
+            if mode not in UPMIXER_MODES:
+                raise ValueError(f"mode must be one of {UPMIXER_MODES}, got {mode!r}")
+            await self._send(f"upmixer {mode}")
+            self._upmixer = mode
+            return {"upmixer": mode}
+
+        if command == "dim":
+            state = params.get("state")
+            if state not in ("on", "off"):
+                raise ValueError("dim state must be 'on' or 'off'")
+            await self._send(f"dim {1 if state == 'on' else 0}")
+            self._dim = state == "on"
+            return {"dim": self._dim}
+
+        if command == "bypass":
+            state = params.get("state")
+            if state not in ("on", "off"):
+                raise ValueError("bypass state must be 'on' or 'off'")
+            await self._send(f"bypass {1 if state == 'on' else 0}")
+            self._bypass = state == "on"
+            return {"bypass": self._bypass}
+
         raise ValueError(f"unknown trinnov command {command!r}")
 
     def _resolve_source(self, params: dict[str, Any]) -> int:
@@ -199,6 +277,10 @@ class TrinnovAdapter(DeviceAdapter):
             Capability("volume_adjust", {"delta": []}, "Adjust volume by delta dB"),
             Capability("mute", {"state": ["on", "off"]}, "Mute on/off"),
             Capability("source", {"name": sorted(self._sources)}, "Select source/profile"),
+            Capability("preset", {"index": []}, "Load a preset by index"),
+            Capability("upmixer", {"mode": UPMIXER_MODES}, "Set upmixer mode"),
+            Capability("dim", {"state": ["on", "off"]}, "Dim on/off"),
+            Capability("bypass", {"state": ["on", "off"]}, "Processing bypass on/off"),
         ]
 
 

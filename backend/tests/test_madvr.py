@@ -59,6 +59,13 @@ async def test_get_status_queries_signal():
     assert "GetIncomingSignalInfo" in transport.sent
 
 
+async def test_temperatures_parsed():
+    adapter, _ = _adapter()
+    adapter._handle_line("Temperatures 64 66 41 48")
+    status = await adapter.get_status()
+    assert status.extra["temperatures"] == {"gpu": 64, "hdmi": 66, "cpu": 41, "mainboard": 48}
+
+
 async def test_set_aspect_ratio_mode():
     adapter, transport = _adapter()
     await adapter.send("set_aspect_ratio_mode", {"mode": "2.40:1"})
