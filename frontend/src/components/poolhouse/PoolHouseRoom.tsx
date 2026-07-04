@@ -25,7 +25,7 @@ export function PoolHouseRoom() {
       <div className="preview-banner">
         Phase 2 preview — layout mockup, not yet connected to hardware.
       </div>
-      {tab === "overview" && <OverviewTab s={s} onOpen={setTab} />}
+      {tab === "overview" && <OverviewTab s={s} />}
       {tab === "display" && <DisplayTab s={s} />}
       {tab === "trinnov" && <TrinnovTab s={s} />}
       {tab === "lighting" && <LightingTab s={s} />}

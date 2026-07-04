@@ -1,11 +1,11 @@
+import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
 import { SOURCES, ZONES, type PoolHouseState } from "./state";
 
-// Room overview: the Room On / Room Off scenes, source picker, and a compact
-// summary card per device. The individual device tabs carry the full options.
-export function OverviewTab({ s, onOpen }: { s: PoolHouseState; onOpen: (tab: string) => void }) {
-  const litZones = ZONES.filter((z) => s.zoneOn[z.key]).map((z) => z.label);
-
+// Room overview: Room On / Room Off scenes, source picker, and a control card per
+// device that mirrors the theater dashboard (volume buttons, lighting sliders).
+// The device tabs carry the fuller option menus.
+export function OverviewTab({ s }: { s: PoolHouseState }) {
   return (
     <>
       <section className="scenebar ph-scenebar">
@@ -38,7 +38,8 @@ export function OverviewTab({ s, onOpen }: { s: PoolHouseState; onOpen: (tab: st
       </section>
 
       <div className="ph-grid">
-        <button className="card card-link" onClick={() => onOpen("display")}>
+        {/* LG G5 display */}
+        <section className="card">
           <div className="card-head">
             <h2>LG G5 84&quot;</h2>
             <span className={`pill ${s.power ? "pill-on" : "pill-off"}`}>{s.power ? "on" : "standby"}</span>
@@ -48,31 +49,69 @@ export function OverviewTab({ s, onOpen }: { s: PoolHouseState; onOpen: (tab: st
             <div><span className="muted">Source</span><strong>{sourceLabel(s.source)}</strong></div>
             <div><span className="muted">Picture</span><strong>{s.picture}</strong></div>
           </div>
-        </button>
+          <div className="subhead">Power</div>
+          <div className="row btn-row">
+            <Btn active={s.power} onClick={() => s.setPower(true)}>On</Btn>
+            <Btn active={!s.power} onClick={() => s.setPower(false)}>Off</Btn>
+          </div>
+        </section>
 
-        <button className="card card-link" onClick={() => onOpen("trinnov")}>
+        {/* Trinnov Altitude 16 — volume controls, matching the theater card */}
+        <section className="card">
           <div className="card-head">
             <h2>Trinnov Altitude 16</h2>
             <span className="pill pill-on">online</span>
           </div>
-          <div className="vol-big">{s.muted ? "Muted" : `${s.volume} dB`}</div>
-          <div className="row btn-row center">
-            <span className="muted">{sourceLabel(s.source)} · {s.upmixer}</span>
-            {s.muted && <MuteIcon muted size={18} />}
+          <div className="row">
+            <div className="stat">
+              <span className="stat-label">Volume</span>
+              <span className="stat-value">{s.muted ? "Muted" : `${s.volume} dB`}</span>
+            </div>
+            <div className="stat">
+              <span className="stat-label">Source</span>
+              <span className="stat-value">{sourceLabel(s.source)}</span>
+            </div>
           </div>
-        </button>
+          <div className="row btn-row">
+            <Btn onClick={() => s.nudge(-2)}>−2</Btn>
+            <Btn onClick={() => s.nudge(-0.5)}>−0.5</Btn>
+            <Btn onClick={() => s.nudge(0.5)}>+0.5</Btn>
+            <Btn onClick={() => s.nudge(2)}>+2</Btn>
+            <button
+              className={`btn icon-btn ${s.muted ? "btn-active" : ""}`}
+              aria-label={s.muted ? "Unmute" : "Mute"}
+              onClick={() => s.setMuted((m) => !m)}
+            >
+              <MuteIcon muted={s.muted} />
+            </button>
+          </div>
+        </section>
 
-        <button className="card card-link" onClick={() => onOpen("lighting")}>
+        {/* Lighting — a brightness slider per zone */}
+        <section className="card">
           <div className="card-head">
             <h2>Lighting</h2>
             <span className="pill pill-on">online</span>
           </div>
-          <div className="info-grid">
-            <div><span className="muted">On</span><strong>{litZones.length ? litZones.join(", ") : "all off"}</strong></div>
+          <div className="light-rows">
+            {ZONES.map((z) => (
+              <div className="light-row" key={z.key}>
+                <span className="light-name">{z.label}</span>
+                <input
+                  className="vol-slider light-slider"
+                  type="range"
+                  min={0}
+                  max={254}
+                  value={s.bri[z.key] ?? 128}
+                  onChange={(e) => s.setBri((b) => ({ ...b, [z.key]: Number(e.target.value) }))}
+                />
+              </div>
+            ))}
           </div>
-        </button>
+        </section>
 
-        <button className="card card-link" onClick={() => onOpen("media")}>
+        {/* Plex (shared with the theater) */}
+        <section className="card">
           <div className="card-head">
             <h2>Plex</h2>
             <span className="pill pill-on">online</span>
@@ -81,7 +120,7 @@ export function OverviewTab({ s, onOpen }: { s: PoolHouseState; onOpen: (tab: st
             <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
             <div><span className="muted">Now playing</span><strong>—</strong></div>
           </div>
-        </button>
+        </section>
       </div>
     </>
   );
