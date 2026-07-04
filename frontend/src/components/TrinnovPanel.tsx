@@ -7,10 +7,8 @@ export function TrinnovPanel({ device }: { device?: DeviceState }) {
   if (!device) return null;
   const volume = device.extra?.volume as number | undefined;
   const muted = device.extra?.mute as boolean | undefined;
+  const sources = (device.extra?.sources as Record<string, number>) ?? {};
   const current = device.input;
-  const format = device.extra?.source_format as string | undefined;
-  const srate = device.extra?.sample_rate as number | undefined;
-  const upmixer = device.extra?.upmixer as string | undefined;
 
   const cmd = (command: string, params?: Record<string, unknown>) =>
     sendCommand("trinnov", command, params).catch((e) => console.error(e));
@@ -34,14 +32,13 @@ export function TrinnovPanel({ device }: { device?: DeviceState }) {
           <MuteIcon muted={muted} />
         </button>
       </div>
-      <div className="subhead">Signal</div>
-      <div className="row">
-        <Stat label="Source" value={current ? sourceLabel(current) : "—"} />
-        <Stat label="Format" value={format ?? "—"} />
-      </div>
-      <div className="row">
-        <Stat label="Sample rate" value={srate ? `${srate / 1000} kHz` : "—"} />
-        <Stat label="Upmixer" value={upmixer ?? "—"} />
+      <div className="subhead">Source</div>
+      <div className="row btn-row wrap">
+        {Object.keys(sources).map((name) => (
+          <Btn key={name} onClick={() => cmd("source", { name })} active={current === name}>
+            {sourceLabel(name)}
+          </Btn>
+        ))}
       </div>
     </Panel>
   );
