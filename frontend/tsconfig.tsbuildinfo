@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/api.ts","./src/main.tsx","./src/store.ts","./src/types.ts","./src/components/JvcPanel.tsx","./src/components/LightingPanel.tsx","./src/components/MadvrPanel.tsx","./src/components/MediaPanel.tsx","./src/components/SceneBar.tsx","./src/components/StatusBar.tsx","./src/components/TrinnovPanel.tsx","./src/components/common.tsx"],"version":"5.9.3"}
