@@ -16,11 +16,13 @@ The system is organized in two layers: a Python (FastAPI) backend that owns all 
 
 ## Installation / Setup
 
-1. Clone the repository and check out the `dev` branch.
+1. Clone the repository (or download a release bundle; see `docs/DEPLOYMENT.md`).
 2. Copy `config/devices.example.yaml` to `config/devices.yaml` and fill in the IP addresses, ports, and credentials for your equipment.
 3. Copy `.env.example` to `.env` and populate secrets (JVC password, Hue application key, Plex token). Never commit `.env` or `config/devices.yaml`.
-4. Build and start the stack: `docker compose up -d --build`.
-5. Open the front end at `http://<host-ip>:8080` on the iPad and add it to the Home Screen for a fullscreen experience.
+4. Build and start the stack: `docker compose up -d --build` (or pull a prebuilt image; see `docs/DEPLOYMENT.md`).
+5. Open the front end at `http://<host-ip>:8487` on the iPad and add it to the Home Screen for a fullscreen experience.
+
+For versioned images, prebuilt-image deployment, and release packages, see `docs/DEPLOYMENT.md`.
 
 ## Usage
 
@@ -37,6 +39,31 @@ Each use case is defined in `docs/usecases/` and implemented as an orchestration
 ## Configuration
 
 All device connection details live in `config/devices.yaml`. All secrets live in environment variables loaded from `.env`. See `docs/CONFIGURATION.md` for the full schema, and each file in `docs/devices/` for device-specific settings and prerequisites.
+
+## Local Development
+
+Run the two halves independently without Docker:
+
+Backend:
+
+```
+python -m venv .venv && source .venv/bin/activate
+pip install -r backend/requirements.txt
+pip install pytest pytest-asyncio          # for the test suite
+python -m pytest                            # runs offline, no hardware
+uvicorn backend.app.main:app --port 8080    # needs config/devices.yaml and .env
+```
+
+Front end (Vite dev server proxies `/api` and `/ws` to the backend on port 8080):
+
+```
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+npm run build      # production bundle in frontend/dist
+```
+
+In production the backend serves the built front end from its static mount, so the whole stack is one origin. The tests and the front-end build run without any device on the network.
 
 ## Contributing
 

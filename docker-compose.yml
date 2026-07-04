@@ -1,19 +1,25 @@
 # Theater automation suite. The backend MUST be on the theater subnet because
 # the Trinnov and MadVR Envy accept control only from the same subnet, and
 # MadVR power-on uses Wake-on-LAN broadcast. host networking satisfies this.
-# See docs/CONFIGURATION.md (Networking).
+# See docs/CONFIGURATION.md (Networking) and docs/DEPLOYMENT.md.
 
 services:
   theater-control:
+    container_name: theater-control
+    # Two ways to get the image:
+    #   1. Build from this repo (default below).
+    #   2. Pull a prebuilt image from GHCR: comment out `build:` and set
+    #      `image: ghcr.io/dhahlen/theater-control:latest` (or a version tag).
+    #      See docs/DEPLOYMENT.md.
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: theater-control
+    image: ghcr.io/dhahlen/theater-control:latest
     network_mode: host          # required; do not switch to bridge without a plan for same-subnet control + WoL
     env_file:
       - .env
     volumes:
       - ./config:/app/config:ro
     restart: unless-stopped
-    # Port is APP_PORT from .env (default 8080). With host networking the
+    # Port is APP_PORT from .env (default 8487). With host networking the
     # service is reachable at http://<host-ip>:<APP_PORT>.

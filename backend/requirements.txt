@@ -2,6 +2,7 @@ fastapi>=0.111
 uvicorn[standard]>=0.30
 pydantic>=2.7
 PyYAML>=6.0
-# Optional, permissively licensed device references (use directly or as protocol refs):
-# jvc-projector-remote  (see docs/devices/jvc-nz900.md)
-# py-madvr              (see docs/devices/madvr-envy.md)
+httpx>=0.27
+# Proven, permissively licensed device library used directly by the JVC adapter
+# (handles the binary framing, NZ SHA256 auth, and per-model command maps).
+pyjvcprojector>=2.0
