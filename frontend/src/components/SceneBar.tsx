@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { runScene } from "../api";
+import { SourceMark, sourceLabel } from "./icons";
 import type { SceneProgress } from "../store";
 import type { StepStatus } from "../types";
 
@@ -83,7 +84,8 @@ export function SceneBar({
               className={`source-chip ${s === source ? "chip-active" : ""}`}
               onClick={() => setSource(s)}
             >
-              {s}
+              <SourceMark name={s} size={24} />
+              {sourceLabel(s)}
             </button>
           ))}
         </div>

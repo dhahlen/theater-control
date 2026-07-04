@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Changed
+
+- iPad-fit and touch polish: the mute control is now a speaker icon that reflects mute state (fixing the cut-off "Unmute" button on the main screen), the Trinnov source selector uses spacious icon cards instead of bunched buttons, source chips/cards carry per-source marks (Shield, Kaleidescape, PC, HTPC), and the MadVR view is a two-column layout with the remote on the side so the page no longer scrolls on an 11-inch iPad.
+
 ### Added
 
 - Multi-tab interface: a top toolbar (Theater, Trinnov, MadVR, JVC, Media, Lighting) with per-device status dots, and full-page device views for granular control. The Trinnov view adds a large volume readout and slider, source/preset/upmixer selectors, and dim/bypass; the MadVR view adds a signal readout, temperature bars, aspect/profile controls, and a full remote.
