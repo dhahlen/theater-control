@@ -54,7 +54,7 @@ def build_app(config: AppConfig | None = None) -> FastAPI:
         finally:
             await manager.stop()
 
-    app = FastAPI(title="theater-control", lifespan=lifespan)
+    app = FastAPI(title="theater-control", version="0.2.0", lifespan=lifespan)
     app.state.config = config
     app.state.store = store
     app.state.bus = bus
