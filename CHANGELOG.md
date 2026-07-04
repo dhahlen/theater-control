@@ -4,7 +4,13 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Added
+
+- Phase 2 planning note for a selectable Pool House room (Trinnov Altitude 16, LG G5, Office Hue bridge, Pool House sources), captured in `docs/usecases/pool-house.md`.
+
 ### Changed
+
+- Source buttons are now logo-only and uniform: brand logos (Nvidia, ASUS ROG) render on compact white tiles with no redundant text, sources without a fitting logo show a short text label (Kscape, HTPC), and the dashboard source chips are a symmetric 2x2 grid. The dashboard MadVR card regained its profile-change button.
 
 - More iPad-fit polish: the dashboard MadVR card is now status-only (the full remote lives on the MadVR tab), fixing the bottom cutoff and keeping the Theater tab from scrolling; the MadVR tab is two columns with a sticky remote that stays put while the rest scrolls; the JVC picture-mode buttons are a proper grid (no overlap); source buttons use real brand logos (Nvidia, ROG, Kaleidescape) with role labels in uniform vertical cards; Kaleidescape is shortened to "Kscape"; and the Theater On/Off buttons are slightly smaller.
 
