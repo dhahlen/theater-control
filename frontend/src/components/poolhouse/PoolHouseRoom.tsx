@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Toolbar, type TabDef } from "../Toolbar";
-import type { PoolHouseState } from "./state";
+import type { PoolHouse } from "./live";
 import { OverviewTab } from "./OverviewTab";
 import { DisplayTab } from "./DisplayTab";
 import { TrinnovTab } from "./TrinnovTab";
@@ -15,20 +15,21 @@ const TABS: TabDef[] = [
   { key: "media", label: "Media" },
 ];
 
-export function PoolHouseRoom({ s }: { s: PoolHouseState }) {
+export function PoolHouseRoom({ s }: { s: PoolHouse }) {
   const [tab, setTab] = useState("overview");
+
+  if (!s.configured) {
+    return <div className="view-empty muted">Pool House devices are not configured.</div>;
+  }
 
   return (
     <>
       <Toolbar tabs={TABS} active={tab} onSelect={setTab} devices={{}} />
-      <div className="preview-banner">
-        Phase 2 preview — layout mockup, not yet connected to hardware.
-      </div>
       {tab === "overview" && <OverviewTab s={s} />}
       {tab === "display" && <DisplayTab s={s} />}
       {tab === "trinnov" && <TrinnovTab s={s} />}
       {tab === "lighting" && <LightingTab s={s} />}
-      {tab === "media" && <MediaTab />}
+      {tab === "media" && <MediaTab s={s} />}
     </>
   );
 }
