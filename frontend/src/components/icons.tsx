@@ -32,6 +32,10 @@ const SOURCE_META: Record<string, SourceMeta> = {
   kaleidescape: { logo: kaleidescapeLogo, label: "KScape" },
   gaming_pc: { logo: rogLogo, label: "Game PC" },
   htpc: { text: "HTPC", label: "HTPC" },
+  // Pool House (Phase 2) sources.
+  switch2: { text: "SW 2", label: "Switch 2" },
+  switch1: { text: "SW 1", label: "Switch 1" },
+  node: { text: "Node", label: "Bluesound Node" },
 };
 
 export function sourceLabel(name: string): string {

@@ -1,0 +1,9 @@
+{
+  "name": "Theater Control",
+  "short_name": "Theater",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0b0e13",
+  "theme_color": "#0b0e13",
+  "start_url": "/"
+}

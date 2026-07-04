@@ -43,7 +43,9 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 10px 14px 14px;
+  /* Respect the iPad safe areas when launched fullscreen from the Home Screen. */
+  padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
+    max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   gap: 12px;
   max-width: 1280px;
   margin: 0 auto;
@@ -853,11 +855,134 @@ body {
   margin-bottom: 6px;
 }
 
+/* ---- Room switcher ---- */
+.room-switcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+}
+.room-tab {
+  min-height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.room-tab-active {
+  background: var(--accent);
+  color: #fff;
+}
+.conn-push {
+  margin-left: auto;
+}
+
+/* ---- Pool House (Phase 2 preview) ---- */
+.preview-banner {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(240, 180, 60, 0.12);
+  border: 1px solid rgba(240, 180, 60, 0.4);
+  color: var(--warn);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.poolhouse {
+  max-width: 1100px;
+}
+.ph-scenebar {
+  align-items: stretch;
+}
+.ph-source-list {
+  grid-template-columns: repeat(5, 1fr);
+}
+.ph-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.ph-plex,
+.ph-note {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.light-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.light-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.light-name {
+  width: 96px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.light-slider {
+  flex: 1;
+}
+.opt-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.zone-toggle {
+  flex: 0 0 auto;
+  min-width: 72px;
+}
+.row.center {
+  justify-content: center;
+}
+.ph-embed {
+  flex: 1;
+  min-height: 260px;
+}
+.embed-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  min-height: 240px;
+}
+.embed-title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
 @media (max-width: 900px) {
   .scenebar {
     grid-template-columns: 1fr;
   }
   .grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .ph-grid {
+    grid-template-columns: 1fr;
   }
 }

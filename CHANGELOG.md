@@ -4,26 +4,23 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-04
+
 ### Added
 
+- Pool House room preview (Phase 2 mockup): a room switcher in the status bar, the title switching to "Pool House Control", and a tabbed interface matching the theater (overview plus Display, Trinnov, Lighting, and Media tabs). The overview carries Room On/Off scenes, the Pool House sources, live volume buttons, and per-zone lighting sliders; the Display tab has the full LG G5 menu (power, HDMI input, picture mode, aspect ratio, energy saving, sound output); the Lighting tab exposes each Hue zone (Pool House, Bar, Lounge, Office). The status bar mirrors the theater readout (display, source, volume). The preview is driven by local state until the Pool House adapters land.
+- Fullscreen Home Screen web app on iPad: a web app manifest and mobile-web-app meta tags so the app launches standalone (no Safari address bar) when added to the Home Screen, plus safe-area padding for landscape.
+- Multi-tab interface: a top toolbar (Theater, Trinnov, MadVR, JVC, Media, Lighting) with per-device status dots, and full-page device views for granular control. The Trinnov view adds a large volume readout and slider, source/preset/upmixer selectors, and dim/bypass; the MadVR view adds a signal readout, temperature bars, aspect/profile controls, and a full remote.
+- Trinnov adapter: preset load (`loadp`), upmixer mode, dim, and bypass commands, plus parsing of preset labels, current preset, upmixer, dim, bypass, sample rate, and source format.
+- MadVR adapter: `GetTemperatures` parsed into GPU/HDMI/CPU/mainboard values for the temperature bars.
 - Phase 2 planning note for a selectable Pool House room (Trinnov Altitude 16, LG G5, Office Hue bridge, Pool House sources), captured in `docs/usecases/pool-house.md`.
 
 ### Changed
 
 - Source buttons are now logo-only and uniform: brand logos (Nvidia, ASUS ROG) render on compact white tiles with no redundant text, sources without a fitting logo show a short text label (Kscape, HTPC), and the dashboard source chips are a symmetric 2x2 grid. The dashboard MadVR card regained its profile-change button.
-
 - More iPad-fit polish: the dashboard MadVR card is now status-only (the full remote lives on the MadVR tab), fixing the bottom cutoff and keeping the Theater tab from scrolling; the MadVR tab is two columns with a sticky remote that stays put while the rest scrolls; the JVC picture-mode buttons are a proper grid (no overlap); source buttons use real brand logos (Nvidia, ROG, Kaleidescape) with role labels in uniform vertical cards; Kaleidescape is shortened to "Kscape"; and the Theater On/Off buttons are slightly smaller.
-
+- The dashboard JVC card drops the HDMI 1 / HDMI 2 buttons (input switching stays on the JVC tab) and surfaces the low-latency toggle, which also keeps the MadVR card below it from being clipped.
 - iPad-fit and touch polish: the mute control is now a speaker icon that reflects mute state (fixing the cut-off "Unmute" button on the main screen), the Trinnov source selector uses spacious icon cards instead of bunched buttons, source chips/cards carry per-source marks (Shield, Kaleidescape, PC, HTPC), and the MadVR view is a two-column layout with the remote on the side so the page no longer scrolls on an 11-inch iPad.
-
-### Added
-
-- Multi-tab interface: a top toolbar (Theater, Trinnov, MadVR, JVC, Media, Lighting) with per-device status dots, and full-page device views for granular control. The Trinnov view adds a large volume readout and slider, source/preset/upmixer selectors, and dim/bypass; the MadVR view adds a signal readout, temperature bars, aspect/profile controls, and a full remote.
-- Trinnov adapter: preset load (`loadp`), upmixer mode, dim, and bypass commands, plus parsing of preset labels, current preset, upmixer, dim, bypass, sample rate, and source format.
-- MadVR adapter: `GetTemperatures` parsed into GPU/HDMI/CPU/mainboard values for the temperature bars.
-
-### Changed
-
 - Plex media panel no longer embeds the full Plex Web app. It shows a rich now-playing card only while something is playing (cover art, ratings, format badges for resolution/HDR/codecs/container/frame rate/bitrate/direct-play, scrub bar, play/pause/stop, and synopsis), and a clean idle state with an optional "Open Plex Web" link otherwise. The adapter now also parses episode label, content rating, runtime, genres, ratings, and HDR dynamic range from `/status/sessions`.
 
 ## [0.1.0] - 2026-07-04
