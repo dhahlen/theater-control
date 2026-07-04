@@ -130,8 +130,29 @@ async def test_status_reports_volume_and_input():
     await adapter.disconnect()
 
 
-async def test_status_offline_before_connect():
-    fake = FakeSsap()
-    adapter = LgAdapter("ph_lg", "10.0.0.9", transport_factory=lambda: fake)
+class FailingSsap(FakeSsap):
+    """Simulates a TV that is off: the WebSocket never connects."""
+
+    async def connect(self) -> None:
+        raise ConnectionError("connection refused")
+
+
+async def test_status_offline_when_tv_unreachable():
+    adapter = LgAdapter("ph_lg", "10.0.0.9", transport_factory=lambda: FailingSsap())
     status = await adapter.get_status()
     assert status.reachable.value == "offline"
+
+
+async def test_status_autoconnects_and_recovers():
+    # A TV that is off at startup, then reachable, should come online on the next
+    # poll without a restart.
+    states = {"up": False}
+
+    def factory():
+        return FakeSsap() if states["up"] else FailingSsap()
+
+    adapter = LgAdapter("ph_lg", "10.0.0.9", transport_factory=factory)
+    assert (await adapter.get_status()).reachable.value == "offline"
+    states["up"] = True
+    assert (await adapter.get_status()).reachable.value == "online"
+    await adapter.disconnect()

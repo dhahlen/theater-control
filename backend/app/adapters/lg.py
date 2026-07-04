@@ -97,6 +97,7 @@ class LgAdapter(DeviceAdapter):
         inputs: dict[str, str] | None = None,
         transport_factory: TransportFactory | None = None,
         on_client_key: KeyHandler | None = None,
+        pair_timeout: float = 60.0,
     ) -> None:
         self.device_id = device_id
         self._host = host
@@ -106,6 +107,7 @@ class LgAdapter(DeviceAdapter):
         self._inputs = dict(inputs or {})
         self._transport_factory = transport_factory
         self._on_client_key = on_client_key
+        self._pair_timeout = pair_timeout
 
         self._transport: Any = None
         self._reader: asyncio.Task[None] | None = None
@@ -113,19 +115,44 @@ class LgAdapter(DeviceAdapter):
         self._counter = 0
         self._registered = False
         self._power = "off"
+        self._connect_lock = asyncio.Lock()
+        self._register_id: str | None = None
+        self._register_future: asyncio.Future[dict[str, Any]] | None = None
 
     # -- lifecycle --------------------------------------------------------
 
     async def connect(self) -> None:
-        if self._transport_factory is not None:
-            self._transport = self._transport_factory()
-        else:
-            self._transport = SsapTransport(f"ws://{self._host}:{self._port}")
-        await self._transport.connect()
-        self._reader = asyncio.create_task(self._read_loop(), name=f"lg:{self.device_id}")
-        await self._register()
+        # Best-effort at startup; get_status reconnects if the TV was off here.
+        await self._ensure_connected()
+
+    async def _ensure_connected(self) -> None:
+        """Open and register the socket if it is not already live.
+
+        The panel's SSAP socket is down while the TV is off, so this is retried
+        on every poll: once the TV powers on, the adapter reconnects on its own.
+        """
+
+        if self._transport is not None and self._registered:
+            return
+        async with self._connect_lock:
+            if self._transport is not None and self._registered:
+                return
+            await self._teardown()
+            if self._transport_factory is not None:
+                self._transport = self._transport_factory()
+            else:
+                self._transport = SsapTransport(f"ws://{self._host}:{self._port}")
+            await self._transport.connect()
+            self._reader = asyncio.create_task(
+                self._read_loop(), name=f"lg:{self.device_id}"
+            )
+            await self._register()
 
     async def disconnect(self) -> None:
+        async with self._connect_lock:
+            await self._teardown()
+
+    async def _teardown(self) -> None:
         self._registered = False
         if self._reader:
             self._reader.cancel()
@@ -140,15 +167,27 @@ class LgAdapter(DeviceAdapter):
             except Exception:
                 pass
             self._transport = None
+        for fut in self._pending.values():
+            if not fut.done():
+                fut.cancel()
+        self._pending.clear()
 
     async def _register(self) -> None:
         payload = dict(REGISTER_MANIFEST)
         if self._client_key:
             payload["client-key"] = self._client_key
-        resp = await self._send_raw("register", payload=payload, wait_for="registered")
+        mid = self._next_id("register")
+        loop = asyncio.get_running_loop()
+        fut: asyncio.Future[dict[str, Any]] = loop.create_future()
+        self._register_id = mid
+        self._register_future = fut
+        await self._transport.send(json.dumps({"id": mid, "type": "register", "payload": payload}))
+        # Pairing can require a physical on-screen accept, so wait generously.
+        resp = await asyncio.wait_for(fut, timeout=self._pair_timeout)
         key = resp.get("payload", {}).get("client-key")
         if key and key != self._client_key:
             self._client_key = key
+            log.info("lg %s paired; store LG_CLIENT_KEY=%s", self.device_id, key)
             if self._on_client_key:
                 result = self._on_client_key(key)
                 if asyncio.iscoroutine(result):
@@ -170,6 +209,9 @@ class LgAdapter(DeviceAdapter):
                 except (ValueError, TypeError):
                     continue
                 mid = msg.get("id")
+                if mid and mid == self._register_id:
+                    self._handle_register_message(msg)
+                    continue
                 fut = self._pending.get(mid) if mid else None
                 if fut and not fut.done():
                     fut.set_result(msg)
@@ -177,6 +219,24 @@ class LgAdapter(DeviceAdapter):
             raise
         except Exception as exc:
             log.debug("lg %s read loop ended: %s", self.device_id, exc)
+        finally:
+            # Mark the link down so the next poll reconnects.
+            self._registered = False
+
+    def _handle_register_message(self, msg: dict[str, Any]) -> None:
+        fut = self._register_future
+        mtype = msg.get("type")
+        if mtype == "registered":
+            self._register_id = None
+            if fut and not fut.done():
+                fut.set_result(msg)
+        elif mtype == "error":
+            self._register_id = None
+            if fut and not fut.done():
+                fut.set_exception(RuntimeError(msg.get("error") or "lg registration refused"))
+        else:
+            # Interim prompt: the user must accept pairing on the TV.
+            log.info("lg %s waiting for pairing: accept the prompt on the TV", self.device_id)
 
     async def _send_raw(
         self,
@@ -216,7 +276,10 @@ class LgAdapter(DeviceAdapter):
     # -- status -----------------------------------------------------------
 
     async def get_status(self) -> DeviceStatus:
-        if not (self._transport and self._registered):
+        try:
+            await self._ensure_connected()
+        except Exception as exc:
+            log.debug("lg %s connect failed: %s", self.device_id, exc)
             return DeviceStatus(device_id=self.device_id, reachable=Reachability.OFFLINE)
         extra: dict[str, Any] = {"inputs": self._inputs}
         try:
@@ -241,6 +304,11 @@ class LgAdapter(DeviceAdapter):
 
     async def send(self, command: str, params: dict[str, Any] | None = None) -> Any:
         params = params or {}
+
+        # Power-on is Wake-on-LAN and must work while the socket is down; every
+        # other command needs a live SSAP connection.
+        if not (command == "power" and params.get("state") == "on"):
+            await self._ensure_connected()
 
         if command == "power":
             state = params.get("state")
