@@ -1,8 +1,19 @@
 import type { DeviceMap } from "../types";
 import { Dot } from "./common";
 import { MuteIcon, sourceLabel } from "./icons";
+import { RoomSwitcher, type Room } from "./RoomSwitcher";
 
-export function StatusBar({ devices, connected }: { devices: DeviceMap; connected: boolean }) {
+export function StatusBar({
+  devices,
+  connected,
+  room,
+  onRoomChange,
+}: {
+  devices: DeviceMap;
+  connected: boolean;
+  room: Room;
+  onRoomChange: (r: Room) => void;
+}) {
   const jvc = devices.jvc;
   const trinnov = devices.trinnov;
   const volume = trinnov?.extra?.volume as number | undefined;
@@ -11,29 +22,34 @@ export function StatusBar({ devices, connected }: { devices: DeviceMap; connecte
 
   const theaterPower = jvc?.power === "on" ? "ON" : jvc?.power ? jvc.power.toUpperCase() : "—";
 
+  const poolhouse = room === "poolhouse";
+
   return (
     <div className="statusbar">
       <div className="brand">
-        <span className="brand-mark">◐</span> Theater Control
+        <span className="brand-mark">◐</span> {poolhouse ? "Pool House Control" : "Theater Control"}
       </div>
-      <div className="status-items">
-        <div className="status-item">
-          <span className="si-label">Theater</span>
-          <span className={`si-value ${jvc?.power === "on" ? "on" : ""}`}>{theaterPower}</span>
+      <RoomSwitcher room={room} onSelect={onRoomChange} />
+      {!poolhouse && (
+        <div className="status-items">
+          <div className="status-item">
+            <span className="si-label">Theater</span>
+            <span className={`si-value ${jvc?.power === "on" ? "on" : ""}`}>{theaterPower}</span>
+          </div>
+          <div className="status-item">
+            <span className="si-label">Source</span>
+            <span className="si-value">{source ? sourceLabel(source) : "—"}</span>
+          </div>
+          <div className="status-item">
+            <span className="si-label">Volume</span>
+            <span className={`si-value si-vol ${muted ? "si-muted" : ""}`}>
+              {muted && <MuteIcon muted size={18} />}
+              {muted ? "Muted" : volume !== undefined ? `${volume} dB` : "—"}
+            </span>
+          </div>
         </div>
-        <div className="status-item">
-          <span className="si-label">Source</span>
-          <span className="si-value">{source ? sourceLabel(source) : "—"}</span>
-        </div>
-        <div className="status-item">
-          <span className="si-label">Volume</span>
-          <span className={`si-value si-vol ${muted ? "si-muted" : ""}`}>
-            {muted && <MuteIcon muted size={18} />}
-            {muted ? "Muted" : volume !== undefined ? `${volume} dB` : "—"}
-          </span>
-        </div>
-      </div>
-      <div className="conn">
+      )}
+      <div className={`conn ${poolhouse ? "conn-push" : ""}`}>
         <Dot reach={connected ? "online" : "offline"} />
         <span>{connected ? "live" : "reconnecting"}</span>
       </div>

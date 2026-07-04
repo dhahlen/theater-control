@@ -853,11 +853,83 @@ body {
   margin-bottom: 6px;
 }
 
+/* ---- Room switcher ---- */
+.room-switcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+}
+.room-tab {
+  min-height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.room-tab-active {
+  background: var(--accent);
+  color: #fff;
+}
+.conn-push {
+  margin-left: auto;
+}
+
+/* ---- Pool House (Phase 2 preview) ---- */
+.preview-banner {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(240, 180, 60, 0.12);
+  border: 1px solid rgba(240, 180, 60, 0.4);
+  color: var(--warn);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.poolhouse {
+  max-width: 1100px;
+}
+.ph-scenebar {
+  align-items: stretch;
+}
+.ph-source-list {
+  grid-template-columns: repeat(5, 1fr);
+}
+.ph-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.ph-plex {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 @media (max-width: 900px) {
   .scenebar {
     grid-template-columns: 1fr;
   }
   .grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .ph-grid {
+    grid-template-columns: 1fr;
   }
 }
