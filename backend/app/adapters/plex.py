@@ -111,6 +111,27 @@ class PlexAdapter(DeviceAdapter):
         )
         resp.raise_for_status()
 
+    # -- cover art proxy --------------------------------------------------
+
+    async def fetch_art(self, path: str, width: int = 320, height: int = 480) -> tuple[bytes, str]:
+        """Fetch and size a Plex image, keeping the token server-side.
+
+        ``path`` is an internal Plex image path (for example a session's
+        ``thumb``/``art``). Only internal paths are accepted so this cannot be
+        used to fetch arbitrary URLs. The image is run through Plex's photo
+        transcoder to bound its size for the panel.
+        """
+
+        if not path.startswith("/") or "://" in path:
+            raise ValueError("art path must be an internal Plex path")
+        resp = await self._http().get(
+            "/photo/:/transcode",
+            params={"url": path, "width": width, "height": height, "minSize": 1},
+            headers={"Accept": "image/*"},
+        )
+        resp.raise_for_status()
+        return resp.content, resp.headers.get("content-type", "image/jpeg")
+
     # -- capabilities -----------------------------------------------------
 
     def capabilities(self) -> list[Capability]:
@@ -122,11 +143,50 @@ class PlexAdapter(DeviceAdapter):
 
 
 def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
+    """Extract cover art, playback state, and media/file details for the UI.
+
+    Parsing is defensive: Plex omits fields depending on media type and whether
+    the stream is transcoded, so every lookup tolerates a missing key.
+    """
+
     player = meta.get("Player", {}) or {}
+    session = meta.get("Session", {}) or {}
+    media = (meta.get("Media") or [{}])[0]
+    part = (media.get("Part") or [{}])[0]
+    transcode = meta.get("TranscodeSession") or {}
+
+    def _num(value: Any) -> float | int | None:
+        return value if isinstance(value, (int, float)) else None
+
     return {
         "title": meta.get("title"),
         "type": meta.get("type"),
         "grandparent_title": meta.get("grandparentTitle"),
+        "year": meta.get("year"),
+        "summary": meta.get("summary"),
         "state": player.get("state"),
-        "player": player.get("title"),
+        "player": player.get("title") or player.get("product"),
+        # Progress.
+        "duration_ms": _num(meta.get("duration")),
+        "offset_ms": _num(meta.get("viewOffset")),
+        # Cover art / backdrop (internal Plex paths; proxied by /api/plex/art).
+        "thumb": meta.get("thumb") or meta.get("grandparentThumb"),
+        "art": meta.get("art"),
+        # Media / file details.
+        "bitrate": _num(media.get("bitrate")),           # kbps
+        "resolution": media.get("videoResolution"),
+        "width": _num(media.get("width")),
+        "height": _num(media.get("height")),
+        "video_codec": media.get("videoCodec"),
+        "audio_codec": media.get("audioCodec"),
+        "audio_channels": _num(media.get("audioChannels")),
+        "frame_rate": media.get("videoFrameRate"),
+        "container": media.get("container") or part.get("container"),
+        "file": part.get("file"),
+        "file_size": _num(part.get("size")),             # bytes
+        # Direct play vs transcode.
+        "video_decision": transcode.get("videoDecision"),
+        "audio_decision": transcode.get("audioDecision"),
+        "transcoding": bool(transcode),
+        "bandwidth": _num(session.get("bandwidth")),     # kbps reserved
     }

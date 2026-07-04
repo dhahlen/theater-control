@@ -15,7 +15,7 @@ import logging
 from dataclasses import asdict
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 log = logging.getLogger("theater.api")
@@ -88,6 +88,26 @@ async def run_scene(name: str, request: Request, body: dict[str, Any] | None = N
     except KeyError:
         raise HTTPException(status_code=404, detail=f"unknown scene {name!r}")
     return result
+
+
+@router.get("/api/plex/art")
+async def plex_art(request: Request, path: str, w: int = 320, h: int = 480) -> Response:
+    """Proxy a Plex cover-art image so the token stays server-side."""
+
+    adapter = request.app.state.manager.get("plex")
+    if adapter is None or not hasattr(adapter, "fetch_art"):
+        raise HTTPException(status_code=404, detail="plex not configured")
+    try:
+        data, content_type = await adapter.fetch_art(path, w, h)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"art fetch failed: {exc}")
+    return Response(
+        content=data,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=120"},
+    )
 
 
 @router.get("/api/state")

@@ -31,6 +31,10 @@ The Media Control use case wants an embedded Plex browser/controller. There are 
 2. For phase 1, the primary deliverable is the embedded Plex Web panel; the native controller endpoints are optional enhancements.
 3. Do not embed the Plex token in front-end URLs. If the embedded Plex Web app needs auth, rely on Plex's own session rather than passing the token through the front end.
 
+## Now Playing (implemented natively)
+
+Rather than depend on a third-party dashboard (for example Tautulli), the adapter parses `GET /status/sessions` directly and reports a rich now-playing object: title, show, year, playback state and progress, cover-art path, bitrate, resolution, video and audio codecs, audio channels, container, file path and size, and whether the stream is direct play or transcoding. Cover art is served through a backend proxy (`GET /api/plex/art?path=<internal thumb path>`) that fetches the image with the server-side token and only accepts internal Plex paths, so the token is never exposed to the browser and the endpoint cannot be used to fetch arbitrary URLs. The Media panel renders this as a now-playing card above the embedded Plex Web view.
+
 ## Lighting Tie-In
 
 The user already dims Philips Hue when Plex starts playing, via an *arr app or webhook. Keep that existing automation as the source of truth for play-triggered dimming, and expose Hue scene control in this app for manual override (see `docs/devices/philips-hue.md` and `docs/usecases/lighting-control.md`). Optionally, the backend can subscribe to Plex webhooks to reflect play state in the UI, but it should not fight the existing dimming automation.

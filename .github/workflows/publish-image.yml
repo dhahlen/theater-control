@@ -50,3 +50,39 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  release:
+    # On a version tag, publish a GitHub Release with a ready-to-deploy bundle.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble deploy bundle
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          dir="theater-control-deploy-${version}"
+          mkdir -p "$dir/config"
+          cp docker-compose.yml "$dir/"
+          cp .env.example "$dir/"
+          cp config/devices.example.yaml "$dir/config/"
+          cp docs/DEPLOYMENT.md "$dir/"
+          cp README.md LICENSE "$dir/"
+          zip -r "${dir}.zip" "$dir"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: theater-control ${{ github.ref_name }}
+          generate_release_notes: true
+          files: theater-control-deploy-*.zip
+          body: |
+            Container image: `ghcr.io/${{ github.repository }}:${{ github.ref_name }}`
+
+            The attached `theater-control-deploy-*.zip` contains the compose file,
+            example `.env`, example `config/devices.yaml`, and the deployment guide.
+            See docs/DEPLOYMENT.md for the two install paths (build vs pull).

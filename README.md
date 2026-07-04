@@ -16,11 +16,13 @@ The system is organized in two layers: a Python (FastAPI) backend that owns all 
 
 ## Installation / Setup
 
-1. Clone the repository and check out the `dev` branch.
+1. Clone the repository (or download a release bundle; see `docs/DEPLOYMENT.md`).
 2. Copy `config/devices.example.yaml` to `config/devices.yaml` and fill in the IP addresses, ports, and credentials for your equipment.
 3. Copy `.env.example` to `.env` and populate secrets (JVC password, Hue application key, Plex token). Never commit `.env` or `config/devices.yaml`.
-4. Build and start the stack: `docker compose up -d --build`.
+4. Build and start the stack: `docker compose up -d --build` (or pull a prebuilt image; see `docs/DEPLOYMENT.md`).
 5. Open the front end at `http://<host-ip>:8487` on the iPad and add it to the Home Screen for a fullscreen experience.
+
+For versioned images, prebuilt-image deployment, and release packages, see `docs/DEPLOYMENT.md`.
 
 ## Usage
 

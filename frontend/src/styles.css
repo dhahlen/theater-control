@@ -368,6 +368,90 @@ body {
   height: 100%;
 }
 
+/* ---- Plex now playing ---- */
+.nowplaying {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.np-art {
+  width: 92px;
+  height: 138px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #000;
+  flex-shrink: 0;
+}
+.np-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.np-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+.np-show {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -2px;
+}
+.np-bar {
+  height: 5px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.np-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+.np-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.np-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 4px;
+}
+.np-detail {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.np-detail-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.np-detail-value {
+  font-size: 14px;
+  font-weight: 600;
+}
+.np-file {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.np-idle {
+  padding: 16px;
+  text-align: center;
+}
+
 /* ---- D-pad ---- */
 .dpad {
   display: grid;
