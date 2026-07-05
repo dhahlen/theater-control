@@ -103,6 +103,20 @@ async def test_now_playing_episode_ratings_genres_hdr():
     assert {"source": "RT", "value": 8.8} in np["ratings"]
 
 
+async def test_session_selected_by_target_player():
+    theater = {**SESSION, "title": "Theater Movie",
+               "Player": {"state": "playing", "title": "Theater",
+                          "machineIdentifier": "theater-id"}}
+    poolhouse = {**SESSION, "title": "Pool House Movie",
+                 "Player": {"state": "playing", "title": "Pool House SHIELD",
+                            "machineIdentifier": "ph-id"}}
+    client = FakeHttp({"MediaContainer": {"size": 2, "Metadata": [theater, poolhouse]}})
+    adapter = PlexAdapter("ph_plex", "http://10.0.0.20:32400", "tok",
+                          default_player_id="ph-id", client=client)
+    np = (await adapter.get_status()).extra["now_playing"]
+    assert np["title"] == "Pool House Movie"
+
+
 async def test_no_sessions_is_none():
     adapter, _ = _adapter({"MediaContainer": {"size": 0}})
     status = await adapter.get_status()

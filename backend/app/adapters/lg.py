@@ -428,7 +428,7 @@ class LgAdapter(DeviceAdapter):
             if token is None:
                 raise ValueError(f"mode must be one of {sorted(PICTURE_MODES)}, got {mode!r}")
             await self._request(
-                "ssap://com.webos.service.settings/setSystemSettings",
+                "luna://com.webos.settingsservice/setSystemSettings",
                 {"category": "picture", "settings": {"pictureMode": token}},
             )
             return {"picture_mode": mode}

@@ -59,7 +59,13 @@ function Badge({ children }: { children: ReactNode }) {
   return <span className="np-badge">{children}</span>;
 }
 
-function PlexNowPlaying({ np }: { np: Record<string, unknown> }) {
+export function PlexNowPlaying({
+  np,
+  deviceId = "plex",
+}: {
+  np: Record<string, unknown>;
+  deviceId?: string;
+}) {
   const g = (k: string) => np[k] as never;
   const title = (g("title") as string) ?? "";
   const show = g("grandparent_title") as string | undefined;
@@ -90,7 +96,7 @@ function PlexNowPlaying({ np }: { np: Record<string, unknown> }) {
   const subheading = show ? title : undefined;
   const metaLine = [year, rating, runtime ? `${runtime} min` : null].filter(Boolean).join(" · ");
 
-  const cmd = (command: string) => sendCommand("plex", command).catch((e) => console.error(e));
+  const cmd = (command: string) => sendCommand(deviceId, command).catch((e) => console.error(e));
 
   return (
     <div className="nowplaying">

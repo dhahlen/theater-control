@@ -12,7 +12,7 @@ import { TrinnovView } from "./components/views/TrinnovView";
 import { MadvrView } from "./components/views/MadvrView";
 import { JvcView } from "./components/views/JvcView";
 import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
-import { poolHouse } from "./components/poolhouse/live";
+import { usePoolHouse } from "./components/poolhouse/live";
 import type { Room } from "./components/RoomSwitcher";
 
 interface UiConfig {
@@ -35,7 +35,7 @@ export function App() {
   const [ui, setUi] = useState<UiConfig>({ sources: [], default_source: "", devices: [] });
   const [tab, setTab] = useState("theater");
   const [room, setRoom] = useState<Room>("theater");
-  const ph = poolHouse(devices);
+  const ph = usePoolHouse(devices);
 
   useEffect(() => {
     fetch("/api/ui-config")

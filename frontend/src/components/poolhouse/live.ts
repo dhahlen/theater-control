@@ -2,6 +2,7 @@
 // map and exposes command dispatchers. Mirrors the theater panels, but keyed off
 // the ph_* device ids the backend registers for the second room.
 
+import { useEffect, useState } from "react";
 import { sendCommand } from "../../api";
 import type { DeviceMap, DeviceState, Reachability } from "../../types";
 
@@ -74,11 +75,19 @@ function isOnline(d?: DeviceState): boolean {
   return (d?.reachable as Reachability | undefined) === "online";
 }
 
-export function poolHouse(devices: DeviceMap): PoolHouse {
+export function usePoolHouse(devices: DeviceMap): PoolHouse {
   const lg = devices["ph_lg"];
   const trinnov = devices["ph_trinnov"];
   const plex = devices["ph_plex"];
   const te = trinnov?.extra ?? {};
+
+  // Optimistic source: highlight the tapped source immediately, then reconcile
+  // with what the Altitude 16 reports once its next status arrives.
+  const deviceSource = trinnov?.input ?? null;
+  const [selSource, setSelSource] = useState<string | null>(deviceSource);
+  useEffect(() => {
+    if (deviceSource) setSelSource(deviceSource);
+  }, [deviceSource]);
 
   const zones: PoolHouseZone[] = PH_ZONES.map((z) => {
     const device = devices[z.id];
@@ -93,7 +102,7 @@ export function poolHouse(devices: DeviceMap): PoolHouse {
     };
   });
 
-  const source = trinnov?.input ?? null;
+  const source = selSource ?? deviceSource;
 
   return {
     configured: Boolean(lg || trinnov || plex || zones.some((z) => z.device)),
@@ -118,7 +127,10 @@ export function poolHouse(devices: DeviceMap): PoolHouse {
 
     lgPower: (on) => send("ph_lg", "power", { state: on ? "on" : "off" }),
     setPicture: (mode) => send("ph_lg", "picture_mode", { mode }),
-    setSource: (name) => send("ph_trinnov", "source", { name }),
+    setSource: (name) => {
+      setSelSource(name);
+      send("ph_trinnov", "source", { name });
+    },
     volumeAdjust: (delta) => send("ph_trinnov", "volume_adjust", { delta }),
     volumeSet: (db) => send("ph_trinnov", "volume_set", { db }),
     setMute: (on) => send("ph_trinnov", "mute", { state: on ? "on" : "off" }),
