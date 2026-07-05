@@ -9,11 +9,13 @@ export function LightSlider({
   on,
   bri,
   onCommit,
+  showPercent,
 }: {
   online: boolean;
   on: boolean;
   bri: number;
   onCommit: (value: number) => void;
+  showPercent?: boolean;
 }) {
   const [val, setVal] = useState(bri);
   const dragging = useRef(false);
@@ -38,7 +40,7 @@ export function LightSlider({
     onCommit(latest.current);
   };
 
-  return (
+  const slider = (
     <input
       className={`vol-slider light-slider ${on ? "" : "slider-off"}`}
       type="range"
@@ -52,5 +54,13 @@ export function LightSlider({
       onPointerCancel={commit}
       onKeyUp={() => onCommit(latest.current)}
     />
+  );
+
+  if (!showPercent) return slider;
+  return (
+    <span className="light-with-pct">
+      {slider}
+      <span className="light-pct">{Math.round((val / 254) * 100)}%</span>
+    </span>
   );
 }
