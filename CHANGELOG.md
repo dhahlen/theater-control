@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-05
+
 ### Added
 
 - LG picture-mode control restored: the webOS `setSystemSettings` call that returned "404 no such service or method" over the plain SSAP socket is now delivered through the notification-alert indirection used by aiopylgtv and the webOS remote apps (create an alert whose on-close action targets the luna URI, then close it to fire the call). The Display tab exposes the Filmmaker, Cinema, Vivid, Standard, and Game presets again.
