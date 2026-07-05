@@ -44,9 +44,9 @@ body {
   display: flex;
   flex-direction: column;
   /* Respect the iPad safe areas when launched fullscreen from the Home Screen. */
-  padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right))
-    max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
-  gap: 12px;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  gap: 10px;
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -353,10 +353,10 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 .card-label {
   font-size: 11px;
@@ -434,7 +434,7 @@ body {
 }
 .scene-btn {
   width: 100%;
-  min-height: 58px;
+  min-height: 50px;
   border: none;
   border-radius: var(--radius);
   color: #fff;
@@ -549,16 +549,29 @@ body {
 }
 
 /* ---- Grid + panels ---- */
+/* The main tabs are single-pane: the grid fills the viewport and never scrolls.
+   Columns share the height; cards clip rather than scroll (content is sized to
+   fit). Scrolling belongs on the device sub-tabs, not here. */
 .grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 .grid-col {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-height: 0;
+}
+.grid > .panel,
+.grid > .card,
+.grid-col > .panel,
+.grid-col > .card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 .panel {
   background: var(--bg-panel);
@@ -576,7 +589,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--line);
 }
 .panel-head h2 {
@@ -585,11 +598,13 @@ body {
   font-weight: 600;
 }
 .panel-body {
-  padding: 12px 14px;
+  flex: 1;
+  min-height: 0;
+  padding: 10px 14px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 /* ---- Bits ---- */
