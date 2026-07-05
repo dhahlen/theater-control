@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Btn } from "../common";
 import { sourceLabel } from "../icons";
 import { PICTURE_MODES, type PoolHouse } from "./live";
 
 // The LG is fed a single HDMI (HDMI 1) from the Altitude 16, so source switching
 // happens on the Trinnov, not here. webOS does not report the current picture
-// mode, so the active preset is tracked optimistically from the last selection.
+// mode or picture settings, so the active preset and brightness are tracked
+// optimistically from the last selection.
 export function DisplayTab({ s }: { s: PoolHouse }) {
   const [picture, setPicture] = useState<string | null>(null);
+  const [backlight, setBacklight] = useState(80);
+  const dragging = useRef(false);
 
   const choose = (mode: string) => {
     setPicture(mode);
@@ -49,8 +52,33 @@ export function DisplayTab({ s }: { s: PoolHouse }) {
             </button>
           ))}
         </div>
+
+        <div className="subhead">Brightness</div>
+        <div className="row light-with-pct">
+          <input
+            className="vol-slider light-slider"
+            type="range"
+            min={0}
+            max={100}
+            value={backlight}
+            disabled={!s.lgOnline}
+            onChange={(e) => setBacklight(Number(e.currentTarget.value))}
+            onPointerDown={() => (dragging.current = true)}
+            onPointerUp={() => {
+              dragging.current = false;
+              s.setBacklight(backlight);
+            }}
+            onPointerCancel={() => {
+              dragging.current = false;
+              s.setBacklight(backlight);
+            }}
+            onKeyUp={() => s.setBacklight(backlight)}
+          />
+          <span className="light-pct">{backlight}%</span>
+        </div>
         <div className="muted ph-note">
-          Source switching is on the Trinnov tab; the LG stays on HDMI 1 from the Altitude 16.
+          Sets OLED Pixel Brightness. Source switching is on the Trinnov tab; the LG stays
+          on HDMI 1 from the Altitude 16.
         </div>
       </section>
     </div>

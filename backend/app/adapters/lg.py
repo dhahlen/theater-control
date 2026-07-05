@@ -117,6 +117,12 @@ PICTURE_MODES: dict[str, str] = {
     "Game": "game",
 }
 
+# Numeric picture settings (0-100) set through setSystemSettings. On the OLED G5,
+# "backlight" is the OLED Pixel Brightness the user sees as "Brightness".
+PICTURE_SETTINGS: frozenset[str] = frozenset(
+    {"backlight", "brightness", "contrast", "color"}
+)
+
 
 class SsapTransport:
     """Minimal async WebSocket wrapper the adapter drives (send/recv JSON text)."""
@@ -433,6 +439,20 @@ class LgAdapter(DeviceAdapter):
             )
             return {"picture_mode": mode}
 
+        if command == "picture_setting":
+            setting = params.get("setting", "backlight")
+            if setting not in PICTURE_SETTINGS:
+                raise ValueError(
+                    f"setting must be one of {sorted(PICTURE_SETTINGS)}, got {setting!r}"
+                )
+            value = int(_as_number(params, "value"))
+            value = max(0, min(100, value))
+            await self._luna_request(
+                "luna://com.webos.settingsservice/setSystemSettings",
+                {"category": "picture", "settings": {setting: value}},
+            )
+            return {setting: value}
+
         raise ValueError(f"unknown lg command {command!r}")
 
     async def _luna_request(self, uri: str, params: dict[str, Any]) -> None:
@@ -477,6 +497,11 @@ class LgAdapter(DeviceAdapter):
             Capability("mute", {"state": ["on", "off"]}, "Mute on/off"),
             Capability("input", {"name": sorted(self._inputs)}, "Switch HDMI input"),
             Capability("picture_mode", {"mode": sorted(PICTURE_MODES)}, "Set picture mode"),
+            Capability(
+                "picture_setting",
+                {"setting": sorted(PICTURE_SETTINGS), "value": []},
+                "Set a picture value 0-100 (backlight is OLED brightness)",
+            ),
         ]
 
 

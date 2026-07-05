@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file. This project fo
 ### Added
 
 - LG picture-mode control restored: the webOS `setSystemSettings` call that returned "404 no such service or method" over the plain SSAP socket is now delivered through the notification-alert indirection used by aiopylgtv and the webOS remote apps (create an alert whose on-close action targets the luna URI, then close it to fire the call). The Display tab exposes the Filmmaker, Cinema, Vivid, Standard, and Game presets again.
+- LG brightness control: the Display tab has a brightness slider that sets the OLED Pixel Brightness (the `backlight` picture setting, 0-100) through the same luna path. It commits on release and, since webOS does not report picture settings back over SSAP, tracks its value optimistically. The adapter's `picture_setting` command also covers `brightness`, `contrast`, and `color`.
 
 ## [0.3.0] - 2026-07-05
 

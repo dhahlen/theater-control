@@ -60,6 +60,7 @@ export interface PoolHouse {
   // commands
   lgPower: (on: boolean) => void;
   setPicture: (mode: string) => void;
+  setBacklight: (value: number) => void;
   setSource: (name: string) => void;
   volumeAdjust: (delta: number) => void;
   volumeSet: (db: number) => void;
@@ -155,6 +156,7 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
 
     lgPower: (on) => send("ph_lg", "power", { state: on ? "on" : "off" }),
     setPicture: (mode) => send("ph_lg", "picture_mode", { mode }),
+    setBacklight: (value) => send("ph_lg", "picture_setting", { setting: "backlight", value }),
     setSource: (name) => {
       setSelSource(name);
       send("ph_trinnov", "source", { name });

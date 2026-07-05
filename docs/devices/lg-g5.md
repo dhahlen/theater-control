@@ -37,6 +37,11 @@ carrying the same id. Commands used:
   it to fire the call. UI names map to the tokens `filmMaker`, `cinema`,
   `vivid`, `normal`, `game`. Requires the notification permission (granted by the
   signed manifest).
+- Picture settings: the same `setSystemSettings` alert indirection sets numeric
+  picture values 0-100 (`backlight`, `brightness`, `contrast`, `color`). On the
+  OLED G5 `backlight` is the "OLED Pixel Brightness" the Display tab exposes as a
+  brightness slider. webOS does not report these back over SSAP, so the slider is
+  set-only and tracks its value optimistically.
 - Status: `ssap://audio/getVolume` and
   `ssap://com.webos.applicationManager/getForegroundAppInfo`
 
