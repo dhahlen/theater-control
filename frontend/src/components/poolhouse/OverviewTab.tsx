@@ -3,11 +3,13 @@ import { MuteIcon, SourceMark, sourceLabel } from "../icons";
 import { PlexNowPlaying } from "../MediaPanel";
 import type { PoolHouse } from "./live";
 
-// Room overview: Room On / Room Off (power the display, set the source), the
-// source picker, and a control card per device mirroring the theater dashboard.
+// Room overview: a single-pane dashboard mirroring the theater layout — Room
+// On/Off and the source picker on top, then Media (Plex) as the tall column with
+// the display, audio, and lighting cards beside it. No scrolling on this tab.
 export function OverviewTab({ s }: { s: PoolHouse }) {
   const sourceNames = Object.keys(s.sources);
   const np = s.plex?.extra?.now_playing as Record<string, unknown> | undefined;
+  const plexReach = s.plex?.reachable ?? "—";
 
   return (
     <>
@@ -42,103 +44,103 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
         </div>
       </section>
 
-      <div className="content-scroll">
-        <div className="ph-grid">
-        {/* LG G5 display */}
-        <section className="card">
-          <div className="card-head">
-            <h2>LG G5 84&quot;</h2>
-            <span className={`pill ${s.power ? "pill-on" : "pill-off"}`}>
-              {s.lgOnline ? (s.power ? "on" : "standby") : "offline"}
-            </span>
-          </div>
-          <div className="info-grid">
-            <div><span className="muted">Input</span><strong>HDMI 1</strong></div>
-            <div><span className="muted">Source</span><strong>{s.source ? sourceLabel(s.source) : "—"}</strong></div>
-          </div>
-          <div className="subhead">Power</div>
-          <div className="row btn-row">
-            <Btn active={s.power} onClick={() => s.lgPower(true)}>On</Btn>
-            <Btn active={s.lgOnline && !s.power} onClick={() => s.lgPower(false)}>Off</Btn>
+      <div className="grid">
+        {/* Media (Plex) — tall column */}
+        <section className="panel panel-wide">
+          <header className="panel-head media-head">
+            <h2>Plex</h2>
+            <span className={`pill ${plexReach === "online" ? "pill-on" : "pill-off"}`}>{plexReach}</span>
+          </header>
+          <div className="panel-body">
+            {np ? (
+              <PlexNowPlaying np={np} deviceId="ph_plex" />
+            ) : (
+              <div className="np-idle">
+                <div className="np-idle-title">Nothing playing</div>
+                <div className="muted">Start something on the Pool House SHIELD and it will show here.</div>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Trinnov Altitude 16 — volume controls */}
-        <section className="card">
-          <div className="card-head">
-            <h2>Trinnov Altitude 16</h2>
-            <span className={`pill ${s.trinnovOnline ? "pill-on" : "pill-off"}`}>
-              {s.trinnovOnline ? "online" : "offline"}
-            </span>
-          </div>
-          <div className="row">
-            <div className="stat">
-              <span className="stat-label">Volume</span>
-              <span className="stat-value">
-                {s.muted ? "Muted" : s.volume !== undefined ? `${s.volume} dB` : "—"}
+        {/* Display + audio */}
+        <div className="grid-col">
+          <section className="card">
+            <div className="card-head">
+              <h2>LG G5 84&quot;</h2>
+              <span className={`pill ${s.power ? "pill-on" : "pill-off"}`}>
+                {s.lgOnline ? (s.power ? "on" : "standby") : "offline"}
               </span>
             </div>
-            <div className="stat">
-              <span className="stat-label">Source</span>
-              <span className="stat-value">{s.source ? sourceLabel(s.source) : "—"}</span>
-            </div>
-          </div>
-          <div className="row btn-row">
-            <Btn onClick={() => s.volumeAdjust(-2)}>−2</Btn>
-            <Btn onClick={() => s.volumeAdjust(-0.5)}>−0.5</Btn>
-            <Btn onClick={() => s.volumeAdjust(0.5)}>+0.5</Btn>
-            <Btn onClick={() => s.volumeAdjust(2)}>+2</Btn>
-            <button
-              className={`btn icon-btn ${s.muted ? "btn-active" : ""}`}
-              aria-label={s.muted ? "Unmute" : "Mute"}
-              onClick={() => s.setMute(!s.muted)}
-            >
-              <MuteIcon muted={s.muted} />
-            </button>
-          </div>
-        </section>
-
-        {/* Lighting — a brightness slider per zone */}
-        <section className="card">
-          <div className="card-head">
-            <h2>Lighting</h2>
-            <span className="pill pill-on">online</span>
-          </div>
-          <div className="light-rows">
-            {s.zones.map((z) => (
-              <div className="light-row" key={z.key}>
-                <span className="light-name">{z.label}</span>
-                <input
-                  className="vol-slider light-slider"
-                  type="range"
-                  min={0}
-                  max={254}
-                  value={z.bri}
-                  disabled={!z.online}
-                  onChange={(e) => s.zoneLevel(z.id, Number(e.target.value))}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Plex (shared with the theater) */}
-        <section className="card">
-          <div className="card-head">
-            <h2>Plex</h2>
-            <span className={`pill ${s.plex?.reachable === "online" ? "pill-on" : "pill-off"}`}>
-              {s.plex?.reachable ?? "—"}
-            </span>
-          </div>
-          {np ? (
-            <PlexNowPlaying np={np} deviceId="ph_plex" />
-          ) : (
             <div className="info-grid">
-              <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
-              <div><span className="muted">Now playing</span><strong>—</strong></div>
+              <div><span className="muted">Input</span><strong>HDMI 1</strong></div>
+              <div><span className="muted">Source</span><strong>{s.source ? sourceLabel(s.source) : "—"}</strong></div>
             </div>
-          )}
-        </section>
+            <div className="row btn-row">
+              <Btn active={s.power} onClick={() => s.lgPower(true)}>On</Btn>
+              <Btn active={s.lgOnline && !s.power} onClick={() => s.lgPower(false)}>Off</Btn>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="card-head">
+              <h2>Trinnov Altitude 16</h2>
+              <span className={`pill ${s.trinnovOnline ? "pill-on" : "pill-off"}`}>
+                {s.trinnovOnline ? "online" : "offline"}
+              </span>
+            </div>
+            <div className="row">
+              <div className="stat">
+                <span className="stat-label">Volume</span>
+                <span className="stat-value">
+                  {s.muted ? "Muted" : s.volume !== undefined ? `${s.volume} dB` : "—"}
+                </span>
+              </div>
+              <div className="stat">
+                <span className="stat-label">Source</span>
+                <span className="stat-value">{s.source ? sourceLabel(s.source) : "—"}</span>
+              </div>
+            </div>
+            <div className="row btn-row">
+              <Btn onClick={() => s.volumeAdjust(-2)}>−2</Btn>
+              <Btn onClick={() => s.volumeAdjust(-0.5)}>−0.5</Btn>
+              <Btn onClick={() => s.volumeAdjust(0.5)}>+0.5</Btn>
+              <Btn onClick={() => s.volumeAdjust(2)}>+2</Btn>
+              <button
+                className={`btn icon-btn ${s.muted ? "btn-active" : ""}`}
+                aria-label={s.muted ? "Unmute" : "Mute"}
+                onClick={() => s.setMute(!s.muted)}
+              >
+                <MuteIcon muted={s.muted} />
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {/* Lighting */}
+        <div className="grid-col">
+          <section className="card">
+            <div className="card-head">
+              <h2>Lighting</h2>
+              <span className="pill pill-on">online</span>
+            </div>
+            <div className="light-rows">
+              {s.zones.map((z) => (
+                <div className="light-row" key={z.key}>
+                  <span className="light-name">{z.label}</span>
+                  <input
+                    className="vol-slider light-slider"
+                    type="range"
+                    min={0}
+                    max={254}
+                    value={z.bri}
+                    disabled={!z.online}
+                    onChange={(e) => s.zoneLevel(z.id, Number(e.target.value))}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </>
