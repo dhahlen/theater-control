@@ -1,6 +1,6 @@
 import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
-import { PlexNowPlayingCompact } from "../MediaPanel";
+import { PlexNowPlaying } from "../MediaPanel";
 import type { PoolHouse } from "./live";
 
 // Room overview: Room On / Room Off (power the display, set the source), the
@@ -130,7 +130,7 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
             </span>
           </div>
           {np ? (
-            <PlexNowPlayingCompact np={np} />
+            <PlexNowPlaying np={np} deviceId="ph_plex" />
           ) : (
             <div className="info-grid">
               <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
