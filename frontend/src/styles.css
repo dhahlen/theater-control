@@ -824,6 +824,156 @@ body {
   color: #cfe0ff;
   border: 1px solid rgba(79, 140, 255, 0.25);
 }
+/* ---- Tautulli-style now-playing card ---- */
+.tt {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  isolation: isolate;
+}
+.tt-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(22px) brightness(0.5) saturate(1.1);
+  transform: scale(1.2);
+  z-index: -2;
+}
+.tt-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(10, 13, 18, 0.9), rgba(10, 13, 18, 0.72));
+  z-index: -1;
+}
+.tt-inner {
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+}
+.tt-poster-col {
+  flex: 0 0 auto;
+  width: 128px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.tt-poster {
+  width: 128px;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  background: var(--bg-elev);
+}
+.tt-ratings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.tt-rating strong {
+  color: var(--muted);
+  margin-right: 3px;
+  font-weight: 600;
+}
+.tt-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tt-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tt-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.tt-sub {
+  font-size: 14px;
+  color: #c3ccda;
+  margin-top: 2px;
+}
+.tt-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.tt-eta {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+.tt-eta-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.tt-eta strong {
+  font-size: 16px;
+}
+.tt-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tt-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.tt-row-label {
+  text-align: right;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  padding-top: 2px;
+}
+.tt-row-value {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tt-progress {
+  padding: 0 14px;
+}
+.tt-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.tt-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+.tt-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.tt-controls {
+  display: flex;
+  gap: 10px;
+  padding: 8px 14px 14px;
+}
+
 .np-details {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

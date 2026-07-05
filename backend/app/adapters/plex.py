@@ -260,6 +260,13 @@ def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
         if isinstance(season, int) and isinstance(number, int):
             episode = f"S{season:02d}E{number:02d}"
 
+    # Poster art: for episodes prefer the show poster over the episode still,
+    # which is a scene frame rather than cover art.
+    if meta.get("type") == "episode":
+        poster = meta.get("grandparentThumb") or meta.get("parentThumb") or meta.get("thumb")
+    else:
+        poster = meta.get("thumb") or meta.get("grandparentThumb")
+
     duration_ms = _num(meta.get("duration"))
     return {
         "title": meta.get("title"),
@@ -278,8 +285,8 @@ def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:
         "duration_ms": duration_ms,
         "offset_ms": _num(meta.get("viewOffset")),
         # Cover art / backdrop (internal Plex paths; proxied by /api/plex/art).
-        "thumb": meta.get("thumb") or meta.get("grandparentThumb"),
-        "art": meta.get("art"),
+        "thumb": poster,
+        "art": meta.get("art") or meta.get("grandparentArt"),
         # Media / file details.
         "bitrate": _num(media.get("bitrate")),           # kbps
         "resolution": media.get("videoResolution"),
