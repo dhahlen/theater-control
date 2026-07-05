@@ -1,11 +1,13 @@
 import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
+import { PlexNowPlayingCompact } from "../MediaPanel";
 import type { PoolHouse } from "./live";
 
 // Room overview: Room On / Room Off (power the display, set the source), the
 // source picker, and a control card per device mirroring the theater dashboard.
 export function OverviewTab({ s }: { s: PoolHouse }) {
   const sourceNames = Object.keys(s.sources);
+  const np = s.plex?.extra?.now_playing as Record<string, unknown> | undefined;
 
   return (
     <>
@@ -127,20 +129,16 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
               {s.plex?.reachable ?? "—"}
             </span>
           </div>
-          <div className="info-grid">
-            <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
-            <div>
-              <span className="muted">Now playing</span>
-              <strong>{nowPlaying(s.plex) ?? "—"}</strong>
+          {np ? (
+            <PlexNowPlayingCompact np={np} />
+          ) : (
+            <div className="info-grid">
+              <div><span className="muted">Player</span><strong>Pool House SHIELD</strong></div>
+              <div><span className="muted">Now playing</span><strong>—</strong></div>
             </div>
-          </div>
+          )}
         </section>
       </div>
     </>
   );
-}
-
-function nowPlaying(plex?: PoolHouse["plex"]): string | undefined {
-  const np = plex?.extra?.now_playing as { title?: string } | undefined;
-  return np?.title;
 }
