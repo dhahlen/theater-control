@@ -32,6 +32,8 @@ class FakeSsap:
             reply = {"type": "response", "id": mid, "payload": {"volume": 12, "muted": False}}
         elif uri.endswith("getForegroundAppInfo"):
             reply = {"type": "response", "id": mid, "payload": {"appId": "com.webos.app.hdmi2"}}
+        elif uri.endswith("createAlert"):
+            reply = {"type": "response", "id": mid, "payload": {"returnValue": True, "alertId": "alert_1"}}
         else:
             reply = {"type": "response", "id": mid, "payload": {"returnValue": True}}
         await self._queue.put(json.dumps(reply))
@@ -110,11 +112,16 @@ async def test_input_by_name():
     await adapter.disconnect()
 
 
-async def test_picture_mode_maps_token():
+async def test_picture_mode_uses_alert_luna_hack():
     adapter, fake = await _connected()
     await adapter.send("picture_mode", {"mode": "Filmmaker"})
-    setp = [m for m in fake.sent if m.get("uri", "").endswith("setSystemSettings")][0]
-    assert setp["payload"]["settings"]["pictureMode"] == "filmMaker"
+    # The luna call is carried by a createAlert (onclose -> setSystemSettings)
+    # followed by a closeAlert that fires it.
+    alert = [m for m in fake.sent if m.get("uri", "").endswith("createAlert")][0]
+    onclose = alert["payload"]["onclose"]
+    assert onclose["uri"] == "luna://com.webos.settingsservice/setSystemSettings"
+    assert onclose["params"]["settings"]["pictureMode"] == "filmMaker"
+    assert any(m.get("uri", "").endswith("closeAlert") for m in fake.sent)
     with pytest.raises(ValueError):
         await adapter.send("picture_mode", {"mode": "Bogus"})
     await adapter.disconnect()
