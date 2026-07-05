@@ -427,18 +427,35 @@ class LgAdapter(DeviceAdapter):
             token = PICTURE_MODES.get(mode)
             if token is None:
                 raise ValueError(f"mode must be one of {sorted(PICTURE_MODES)}, got {mode!r}")
-            resp = await self._request(
+            await self._luna_request(
                 "luna://com.webos.settingsservice/setSystemSettings",
                 {"category": "picture", "settings": {"pictureMode": token}},
             )
-            # webOS may accept the request but reject the change with
-            # returnValue=false; surface the TV's response so it can be diagnosed.
-            log.info("lg %s picture_mode(%s) response: %s", self.device_id, mode, resp)
-            if resp.get("returnValue") is False:
-                raise RuntimeError(resp.get("errorText") or "picture mode rejected by TV")
             return {"picture_mode": mode}
 
         raise ValueError(f"unknown lg command {command!r}")
+
+    async def _luna_request(self, uri: str, params: dict[str, Any]) -> None:
+        """Invoke a privileged luna:// call that SSAP otherwise blocks (404).
+
+        webOS refuses direct luna:// requests over SSAP, so this uses the alert
+        indirection aiopylgtv/webOS remote apps rely on: create a notification
+        whose on-close action targets the luna uri, then close it immediately to
+        fire the call. Requires the notification permission from the manifest.
+        """
+
+        action = {"uri": uri, "params": params}
+        payload = {
+            "message": " ",
+            "buttons": [{"label": "", "onClick": uri, "params": params}],
+            "onclose": action,
+            "onfail": action,
+        }
+        created = await self._request("ssap://system.notifications/createAlert", payload)
+        alert_id = created.get("alertId")
+        if not alert_id:
+            raise RuntimeError("lg alert creation failed")
+        await self._request("ssap://system.notifications/closeAlert", {"alertId": alert_id})
 
     def _resolve_input(self, params: dict[str, Any]) -> str:
         if "input" in params:

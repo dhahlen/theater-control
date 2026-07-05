@@ -29,10 +29,14 @@ carrying the same id. Commands used:
   `ssap://audio/volumeDown`
 - Mute: `ssap://audio/setMute` `{"mute": bool}`
 - Input: `ssap://tv/switchInput` `{"inputId": "HDMI_1"}`
-- Picture mode: `ssap://com.webos.service.settings/setSystemSettings`
-  `{"category": "picture", "settings": {"pictureMode": "<token>"}}`, where the
-  UI names map to the webOS tokens `filmMaker`, `cinema`, `vivid`, `normal`,
-  `game`.
+- Picture mode: webOS blocks direct `luna://` calls over SSAP (404), so the
+  luna `setSystemSettings` call is delivered via the alert indirection used by
+  aiopylgtv/webOS remote apps — create a notification whose on-close action
+  targets `luna://com.webos.settingsservice/setSystemSettings`
+  `{"category": "picture", "settings": {"pictureMode": "<token>"}}`, then close
+  it to fire the call. UI names map to the tokens `filmMaker`, `cinema`,
+  `vivid`, `normal`, `game`. Requires the notification permission (granted by the
+  signed manifest).
 - Status: `ssap://audio/getVolume` and
   `ssap://com.webos.applicationManager/getForegroundAppInfo`
 
