@@ -42,7 +42,8 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
         </div>
       </section>
 
-      <div className="ph-grid">
+      <div className="content-scroll">
+        <div className="ph-grid">
         {/* LG G5 display */}
         <section className="card">
           <div className="card-head">
@@ -138,6 +139,7 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
             </div>
           )}
         </section>
+        </div>
       </div>
     </>
   );

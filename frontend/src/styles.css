@@ -51,6 +51,23 @@ body {
   margin: 0 auto;
 }
 
+/* Fixed top chrome; the active view scrolls below it. */
+.statusbar,
+.toolbar,
+.scenebar {
+  flex-shrink: 0;
+}
+/* Scrollable content region so a short viewport (Safari URL bar) scrolls the
+   view instead of squishing the toolbar or clipping cards. */
+.content-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* ---- Status bar ---- */
 .statusbar {
   display: flex;
@@ -533,8 +550,6 @@ body {
 
 /* ---- Grid + panels ---- */
 .grid {
-  flex: 1;
-  min-height: 0;
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
   gap: 12px;
@@ -653,23 +668,25 @@ body {
 }
 
 /* ---- Media ---- */
+.media-head {
+  justify-content: space-between;
+}
 .tabs {
   display: flex;
   gap: 6px;
 }
 .tab {
-  min-height: 40px;
+  min-height: 34px;
   padding: 0 16px;
-  border-radius: 10px 10px 0 0;
+  border-radius: 9px;
   border: 1px solid var(--line);
-  border-bottom: none;
   background: var(--bg-elev);
   color: var(--muted);
   cursor: pointer;
 }
 .tab-active {
   color: var(--text);
-  background: var(--bg-panel);
+  background: rgba(79, 140, 255, 0.18);
   border-color: var(--accent);
 }
 .plex-frame {

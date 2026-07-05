@@ -73,15 +73,17 @@ export function App() {
             progress={progress}
             markSceneStarted={markSceneStarted}
           />
-          <div className="grid">
-            <MediaPanel plex={devices.plex} kaleidescape={devices.kaleidescape} />
-            <div className="grid-col">
-              <TrinnovPanel device={devices.trinnov} />
-              <LightingPanel device={devices.hue} />
-            </div>
-            <div className="grid-col">
-              <JvcPanel device={devices.jvc} />
-              <MadvrPanel device={devices.madvr} />
+          <div className="content-scroll">
+            <div className="grid">
+              <MediaPanel plex={devices.plex} kaleidescape={devices.kaleidescape} />
+              <div className="grid-col">
+                <TrinnovPanel device={devices.trinnov} />
+                <LightingPanel device={devices.hue} />
+              </div>
+              <div className="grid-col">
+                <JvcPanel device={devices.jvc} />
+                <MadvrPanel device={devices.madvr} />
+              </div>
             </div>
           </div>
         </>
