@@ -77,7 +77,8 @@ class PlexAdapter(DeviceAdapter):
 
         container = data.get("MediaContainer", {})
         sessions = container.get("Metadata", []) or []
-        now_playing = _summarize_session(sessions[0]) if sessions else None
+        chosen = self._session_for_player(sessions)
+        now_playing = _summarize_session(chosen) if chosen else None
         return DeviceStatus(
             device_id=self.device_id,
             reachable=Reachability.ONLINE,
@@ -88,6 +89,20 @@ class PlexAdapter(DeviceAdapter):
                 "web_url": self._web_url,
             },
         )
+
+    def _session_for_player(self, sessions: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """Pick the session on this adapter's target player, else the first one.
+
+        With a shared server, the Pool House adapter must report its own player's
+        session rather than whatever happens to be first in the list.
+        """
+
+        if self._default_player_id:
+            for session in sessions:
+                player = session.get("Player", {}) or {}
+                if player.get("machineIdentifier") == self._default_player_id:
+                    return session
+        return sessions[0] if sessions else None
 
     # -- commands ---------------------------------------------------------
 
