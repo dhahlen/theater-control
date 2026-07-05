@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { sendCommand } from "../api";
 import type { DeviceState } from "../types";
-import { Btn, Panel } from "./common";
+import { Btn } from "./common";
 
 // Kaleidescape transport remote. Buttons map to the adapter capability names.
 function KaleidescapeRemote({ device }: { device: DeviceState }) {
@@ -218,17 +218,20 @@ export function MediaPanel({
   const webUrl = plex?.extra?.web_url as string | undefined;
 
   return (
-    <Panel title="Media" className="panel-wide">
-      <div className="tabs">
-        {tabs.map((t) => (
-          <button key={t} className={`tab ${t === tab ? "tab-active" : ""}`} onClick={() => setTab(t)}>
-            {t}
-          </button>
-        ))}
-      </div>
-      {tab === "Plex" && plex && (
-        <>
-          {plex.extra?.now_playing ? (
+    <section className="panel panel-wide">
+      <header className="panel-head media-head">
+        <h2>Media</h2>
+        <div className="tabs">
+          {tabs.map((t) => (
+            <button key={t} className={`tab ${t === tab ? "tab-active" : ""}`} onClick={() => setTab(t)}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </header>
+      <div className="panel-body">
+        {tab === "Plex" && plex && (
+          plex.extra?.now_playing ? (
             <PlexNowPlaying np={plex.extra.now_playing as Record<string, unknown>} />
           ) : (
             <div className="np-idle">
@@ -240,10 +243,10 @@ export function MediaPanel({
                 </a>
               )}
             </div>
-          )}
-        </>
-      )}
-      {tab === "Kaleidescape" && kaleidescape && <KaleidescapeRemote device={kaleidescape} />}
-    </Panel>
+          )
+        )}
+        {tab === "Kaleidescape" && kaleidescape && <KaleidescapeRemote device={kaleidescape} />}
+      </div>
+    </section>
   );
 }
