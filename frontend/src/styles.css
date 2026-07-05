@@ -924,6 +924,36 @@ body {
   font-size: 14px;
   line-height: 1.4;
 }
+.np-compact {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.np-compact-art {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  background: var(--bg-elev);
+}
+.np-compact-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.np-compact-title {
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.np-compact-sub {
+  font-size: 13px;
+}
 .light-rows {
   display: flex;
   flex-direction: column;
