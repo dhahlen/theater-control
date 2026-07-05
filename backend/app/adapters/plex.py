@@ -28,7 +28,10 @@ class PlexAdapter(DeviceAdapter):
         token: str,
         default_player_id: str = "",
         web_url: str = "",
+        tautulli_url: str = "",
+        tautulli_key: str = "",
         client: Any | None = None,
+        tautulli_client: Any | None = None,
     ) -> None:
         self.device_id = device_id
         self._base_url = base_url.rstrip("/")
@@ -36,6 +39,9 @@ class PlexAdapter(DeviceAdapter):
         self._default_player_id = default_player_id
         self._web_url = web_url or f"{self._base_url}/web"
         self._client = client
+        self._tautulli_url = tautulli_url.rstrip("/")
+        self._tautulli_key = tautulli_key
+        self._tautulli_client = tautulli_client
 
     def _http(self) -> Any:
         if self._client is None:
@@ -48,17 +54,25 @@ class PlexAdapter(DeviceAdapter):
             )
         return self._client
 
+    def _thttp(self) -> Any:
+        if self._tautulli_client is None:
+            import httpx
+
+            self._tautulli_client = httpx.AsyncClient(base_url=self._tautulli_url, timeout=5.0)
+        return self._tautulli_client
+
     # -- lifecycle --------------------------------------------------------
 
     async def connect(self) -> None:
         return None
 
     async def disconnect(self) -> None:
-        if self._client is not None:
-            try:
-                await self._client.aclose()
-            except Exception:
-                pass
+        for client in (self._client, self._tautulli_client):
+            if client is not None:
+                try:
+                    await client.aclose()
+                except Exception:
+                    pass
 
     # -- status -----------------------------------------------------------
 
@@ -79,6 +93,9 @@ class PlexAdapter(DeviceAdapter):
         sessions = container.get("Metadata", []) or []
         chosen = self._session_for_player(sessions)
         now_playing = _summarize_session(chosen) if chosen else None
+        if now_playing is not None:
+            extras = await self._tautulli_extras()
+            now_playing.update({k: v for k, v in extras.items() if v is not None})
         return DeviceStatus(
             device_id=self.device_id,
             reachable=Reachability.ONLINE,
@@ -89,6 +106,35 @@ class PlexAdapter(DeviceAdapter):
                 "web_url": self._web_url,
             },
         )
+
+    async def _tautulli_extras(self) -> dict[str, Any]:
+        """Fetch Tautulli activity for this player and return display extras.
+
+        Returns an empty dict when Tautulli is not configured or unavailable, so
+        the now-playing card simply falls back to the Plex-only detail.
+        """
+
+        if not (self._tautulli_url and self._tautulli_key):
+            return {}
+        try:
+            resp = await self._thttp().get(
+                "/api/v2", params={"apikey": self._tautulli_key, "cmd": "get_activity"}
+            )
+            resp.raise_for_status()
+            sessions = resp.json().get("response", {}).get("data", {}).get("sessions", []) or []
+        except Exception as exc:
+            log.debug("tautulli activity failed: %s", exc)
+            return {}
+
+        chosen = None
+        if self._default_player_id:
+            for session in sessions:
+                if session.get("machine_id") == self._default_player_id:
+                    chosen = session
+                    break
+        if chosen is None:
+            chosen = sessions[0] if sessions else None
+        return _tautulli_fields(chosen) if chosen else {}
 
     def _session_for_player(self, sessions: list[dict[str, Any]]) -> dict[str, Any] | None:
         """Pick the session on this adapter's target player, else the first one.
@@ -155,6 +201,39 @@ class PlexAdapter(DeviceAdapter):
             Capability("pause", {}, "Pause the target player"),
             Capability("stop", {}, "Stop the target player"),
         ]
+
+
+def _tautulli_fields(session: dict[str, Any]) -> dict[str, Any]:
+    """Map a Tautulli activity session to the extra now-playing fields.
+
+    Tautulli returns most values as strings, so numbers are coerced and the
+    ``*_decision`` tokens ("direct play", "transcode", "copy") are normalized.
+    """
+
+    def _int(value: Any) -> int | None:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _decision(value: Any) -> str | None:
+        text = (value or "").replace("_", " ").strip()
+        return text.title() if text else None
+
+    return {
+        "product": session.get("product") or None,
+        "quality_profile": session.get("quality_profile") or None,
+        "stream_bitrate": _int(session.get("stream_bitrate")),
+        "bandwidth": _int(session.get("bandwidth")),
+        "location": (session.get("location") or "").upper() or None,
+        "ip_address": session.get("ip_address") or None,
+        "video_decision": _decision(session.get("video_decision")),
+        "audio_decision": _decision(session.get("audio_decision")),
+        "container_decision": _decision(
+            session.get("stream_container_decision") or session.get("container_decision")
+        ),
+        "stream_decision": _decision(session.get("transcode_decision")),
+    }
 
 
 def _summarize_session(meta: dict[str, Any]) -> dict[str, Any]:

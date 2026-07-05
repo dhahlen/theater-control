@@ -90,6 +90,8 @@ class DeviceManager:
                 token=cfg.secrets.plex_token or "",
                 default_player_id=cfg.plex.default_player_id,
                 web_url=cfg.plex.web_url,
+                tautulli_url=cfg.tautulli.base_url if cfg.tautulli else "",
+                tautulli_key=cfg.secrets.tautulli_api_key or "",
             )
 
         self._build_poolhouse_adapters()
@@ -134,6 +136,8 @@ class DeviceManager:
                 token=cfg.secrets.plex_token or "",
                 default_player_id=ph.plex.player_id,
                 web_url=cfg.plex.web_url,
+                tautulli_url=cfg.tautulli.base_url if cfg.tautulli else "",
+                tautulli_key=cfg.secrets.tautulli_api_key or "",
             )
         if ph.lg:
             from ..adapters.lg import LgAdapter

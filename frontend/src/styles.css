@@ -824,6 +824,30 @@ body {
   color: #cfe0ff;
   border: 1px solid rgba(79, 140, 255, 0.25);
 }
+.np-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 4px 18px;
+  margin-top: 2px;
+}
+.np-detail {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.np-detail-label {
+  color: var(--muted);
+  min-width: 78px;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  padding-top: 1px;
+}
+.np-detail-value {
+  color: var(--text);
+  font-weight: 600;
+}
 .np-summary {
   font-size: 13px;
   color: #c3ccda;
