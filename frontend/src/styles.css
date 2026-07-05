@@ -565,11 +565,18 @@ body {
   gap: 10px;
   min-height: 0;
 }
+/* The tall Media column fills its cell; stacked device cards size to their
+   content (so a taller card like MadVR gets the room it needs instead of a
+   forced half). */
 .grid > .panel,
-.grid > .card,
+.grid > .card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 .grid-col > .panel,
 .grid-col > .card {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   overflow: hidden;
 }
@@ -1147,6 +1154,11 @@ body {
 }
 .light-slider {
   flex: 1;
+  accent-color: var(--accent);
+}
+/* Zone is off: grey the track so it reads as inactive at a glance. */
+.light-slider.slider-off {
+  accent-color: #5b6675;
 }
 .opt-block {
   display: flex;

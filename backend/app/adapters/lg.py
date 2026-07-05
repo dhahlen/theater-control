@@ -427,10 +427,15 @@ class LgAdapter(DeviceAdapter):
             token = PICTURE_MODES.get(mode)
             if token is None:
                 raise ValueError(f"mode must be one of {sorted(PICTURE_MODES)}, got {mode!r}")
-            await self._request(
+            resp = await self._request(
                 "luna://com.webos.settingsservice/setSystemSettings",
                 {"category": "picture", "settings": {"pictureMode": token}},
             )
+            # webOS may accept the request but reject the change with
+            # returnValue=false; surface the TV's response so it can be diagnosed.
+            log.info("lg %s picture_mode(%s) response: %s", self.device_id, mode, resp)
+            if resp.get("returnValue") is False:
+                raise RuntimeError(resp.get("errorText") or "picture mode rejected by TV")
             return {"picture_mode": mode}
 
         raise ValueError(f"unknown lg command {command!r}")
