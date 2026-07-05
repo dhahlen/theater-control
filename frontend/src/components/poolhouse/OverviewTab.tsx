@@ -1,7 +1,7 @@
 import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
-import { PlexNowPlaying } from "../MediaPanel";
 import { LightSlider } from "./LightSlider";
+import { MediaContent } from "./MediaContent";
 import type { PoolHouse } from "./live";
 
 // Room overview: a single-pane dashboard mirroring the theater layout — Room
@@ -9,8 +9,7 @@ import type { PoolHouse } from "./live";
 // the display, audio, and lighting cards beside it. No scrolling on this tab.
 export function OverviewTab({ s }: { s: PoolHouse }) {
   const sourceNames = Object.keys(s.sources);
-  const np = s.plex?.extra?.now_playing as Record<string, unknown> | undefined;
-  const plexReach = s.plex?.reachable ?? "—";
+  const online = s.plex?.reachable === "online" || s.shieldActive;
 
   return (
     <>
@@ -46,21 +45,14 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
       </section>
 
       <div className="grid">
-        {/* Media (Plex) — tall column */}
+        {/* Media — tall column (Plex, or the Shield's current app) */}
         <section className="panel panel-wide">
           <header className="panel-head media-head">
-            <h2>Plex</h2>
-            <span className={`pill ${plexReach === "online" ? "pill-on" : "pill-off"}`}>{plexReach}</span>
+            <h2>Media</h2>
+            <span className={`pill ${online ? "pill-on" : "pill-off"}`}>{online ? "online" : "—"}</span>
           </header>
           <div className="panel-body">
-            {np ? (
-              <PlexNowPlaying np={np} deviceId="ph_plex" />
-            ) : (
-              <div className="np-idle">
-                <div className="np-idle-title">Nothing playing</div>
-                <div className="muted">Start something on the Pool House SHIELD and it will show here.</div>
-              </div>
-            )}
+            <MediaContent s={s} />
           </div>
         </section>
 

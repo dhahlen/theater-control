@@ -1192,6 +1192,27 @@ body {
   font-weight: 600;
   color: var(--muted);
 }
+
+/* Shield (non-Plex app) now-playing */
+.shield-np {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.shield-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.shield-app {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
 .light-slider {
   flex: 1;
   accent-color: var(--accent);

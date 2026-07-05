@@ -32,6 +32,14 @@ export interface PoolHouse {
   lg?: DeviceState;
   trinnov?: DeviceState;
   plex?: DeviceState;
+  shield?: DeviceState;
+  // Shield now-playing for non-Plex apps (Netflix, Prime, etc.).
+  shieldApp?: string;
+  shieldTitle?: string;
+  shieldSubtitle?: string;
+  shieldState?: string;
+  shieldActive: boolean;
+  shieldKey: (command: string) => void;
   // LG display
   lgOnline: boolean;
   power: boolean;
@@ -79,7 +87,21 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
   const lg = devices["ph_lg"];
   const trinnov = devices["ph_trinnov"];
   const plex = devices["ph_plex"];
+  const shield = devices["ph_shield"];
   const te = trinnov?.extra ?? {};
+  const she = shield?.extra ?? {};
+  const shieldApp = she.app_name as string | undefined;
+  const shieldTitle = she.title as string | undefined;
+  const shieldState = she.state as string | undefined;
+  const shieldPkg = she.app as string | undefined;
+  // A real streaming app is playing/paused (not the launcher, and not Plex,
+  // which has its own richer card).
+  const shieldActive =
+    isOnline(shield) &&
+    Boolean(shieldState) &&
+    shieldPkg !== "com.plexapp.android" &&
+    shieldApp !== "Home" &&
+    shieldApp !== "Shield Home";
 
   // Optimistic source: highlight the tapped source immediately, then reconcile
   // with what the Altitude 16 reports once its next status arrives.
@@ -105,10 +127,16 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
   const source = selSource ?? deviceSource;
 
   return {
-    configured: Boolean(lg || trinnov || plex || zones.some((z) => z.device)),
+    configured: Boolean(lg || trinnov || plex || shield || zones.some((z) => z.device)),
     lg,
     trinnov,
     plex,
+    shield,
+    shieldApp,
+    shieldTitle,
+    shieldSubtitle: she.subtitle as string | undefined,
+    shieldState,
+    shieldActive,
     lgOnline: isOnline(lg),
     power: lg?.power === "on",
     trinnovOnline: isOnline(trinnov),
@@ -146,5 +174,6 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
       if (source) send("ph_trinnov", "source", { name: source });
     },
     roomOff: () => send("ph_lg", "power", { state: "off" }),
+    shieldKey: (command) => send("ph_shield", command),
   };
 }
