@@ -60,6 +60,12 @@ hue:
     "off": "REPLACE_WITH_SCENE_ID"   # quote "off": bare off is YAML boolean false
   # app key provided via HUE_APP_KEY in .env
 
+# Optional Tautulli source: merges product, quality profile, per-stream
+# direct-play/transcode decisions, location, and bandwidth into now-playing.
+tautulli:
+  base_url: "http://192.168.1.20:8181"
+  # API key provided via TAUTULLI_API_KEY in .env
+
 # ---- Source-specific behavior for Theater On ----
 
 sources:

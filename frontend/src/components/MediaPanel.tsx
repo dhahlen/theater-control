@@ -59,6 +59,15 @@ function Badge({ children }: { children: ReactNode }) {
   return <span className="np-badge">{children}</span>;
 }
 
+function Detail({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="np-detail">
+      <span className="np-detail-label">{label}</span>
+      <span className="np-detail-value">{value}</span>
+    </div>
+  );
+}
+
 export function PlexNowPlaying({
   np,
   deviceId = "plex",
@@ -90,11 +99,29 @@ export function PlexNowPlaying({
   const genres = (g("genres") as string[] | undefined) ?? [];
   const ratings = (g("ratings") as { source: string; value: number }[] | undefined) ?? [];
   const summary = g("summary") as string | undefined;
+  // Tautulli-sourced detail (present only when Tautulli is configured).
+  const product = g("product") as string | undefined;
+  const quality = g("quality_profile") as string | undefined;
+  const streamBitrate = g("stream_bitrate") as number | undefined;
+  const bandwidth = g("bandwidth") as number | undefined;
+  const location = g("location") as string | undefined;
+  const ip = g("ip_address") as string | undefined;
+  const videoDecision = g("video_decision") as string | undefined;
+  const audioDecision = g("audio_decision") as string | undefined;
+  const containerDecision = g("container_decision") as string | undefined;
+  const streamDecision = g("stream_decision") as string | undefined;
 
   const pct = dur && off ? Math.min(100, (off / dur) * 100) : 0;
   const heading = show ? `${show}${episode ? ` · ${episode}` : ""}` : title;
   const subheading = show ? title : undefined;
   const metaLine = [year, rating, runtime ? `${runtime} min` : null].filter(Boolean).join(" · ");
+  const qualityLine = quality
+    ? `${quality}${streamBitrate ? ` (${(streamBitrate / 1000).toFixed(1)} Mbps)` : ""}`
+    : undefined;
+  const remaining = dur && off ? dur - off : undefined;
+  const eta = remaining
+    ? new Date(Date.now() + remaining).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : undefined;
 
   const cmd = (command: string) => sendCommand(deviceId, command).catch((e) => console.error(e));
 
@@ -130,13 +157,26 @@ export function PlexNowPlaying({
           <Badge>{transcoding ? "Transcode" : "Direct Play"}</Badge>
         </div>
 
+        {product && (
+          <div className="np-details">
+            <Detail label="Product" value={product} />
+            {qualityLine && <Detail label="Quality" value={qualityLine} />}
+            {streamDecision && <Detail label="Stream" value={streamDecision} />}
+            {containerDecision && <Detail label="Container" value={containerDecision} />}
+            {videoDecision && <Detail label="Video" value={videoDecision} />}
+            {audioDecision && <Detail label="Audio" value={audioDecision} />}
+            {location && <Detail label="Location" value={ip ? `${location}: ${ip}` : location} />}
+            {bandwidth && <Detail label="Bandwidth" value={`${(bandwidth / 1000).toFixed(1)} Mbps`} />}
+          </div>
+        )}
+
         <div className="np-progress">
           <div className="np-bar">
             <div className="np-bar-fill" style={{ width: `${pct}%` }} />
           </div>
           <div className="np-times">
             <span>{fmtTime(off)}</span>
-            <span>-{fmtTime(dur && off ? dur - off : 0)}</span>
+            <span>{eta ? `ETA ${eta} · ` : ""}-{fmtTime(remaining ?? 0)}</span>
           </div>
         </div>
 

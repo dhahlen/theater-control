@@ -88,6 +88,17 @@ class HueConfig(BaseModel):
     scenes: dict[str, str] = Field(default_factory=dict)
 
 
+class TautulliConfig(BaseModel):
+    """Optional Tautulli source for richer now-playing detail.
+
+    When set, the Plex adapters merge Tautulli's activity (product, quality
+    profile, per-stream direct-play/transcode decisions, location, bandwidth)
+    into the now-playing payload. The API key comes from TAUTULLI_API_KEY.
+    """
+
+    base_url: str
+
+
 class LgConfig(BaseModel):
     """LG G5 (webOS) display, controlled over the SSAP WebSocket API."""
 
@@ -174,6 +185,7 @@ class Secrets(BaseModel):
     plex_token: str | None = None
     hue_poolhouse_app_key: str | None = None
     lg_client_key: str | None = None
+    tautulli_api_key: str | None = None
 
 
 class AppConfig(BaseModel):
@@ -185,6 +197,7 @@ class AppConfig(BaseModel):
     kaleidescape: KaleidescapeConfig | None = None
     plex: PlexConfig | None = None
     hue: HueConfig | None = None
+    tautulli: TautulliConfig | None = None
 
     sources: dict[str, SourceBehavior] = Field(default_factory=dict)
     default_source: str = "kaleidescape"
@@ -229,6 +242,7 @@ def _load_secrets() -> Secrets:
         plex_token=os.environ.get("PLEX_TOKEN"),
         hue_poolhouse_app_key=os.environ.get("HUE_POOLHOUSE_APP_KEY"),
         lg_client_key=os.environ.get("LG_CLIENT_KEY"),
+        tautulli_api_key=os.environ.get("TAUTULLI_API_KEY"),
     )
 
 

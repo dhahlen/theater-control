@@ -117,6 +117,41 @@ async def test_session_selected_by_target_player():
     assert np["title"] == "Pool House Movie"
 
 
+class FakeTautulli:
+    def __init__(self, sessions):
+        self._sessions = sessions
+
+    async def get(self, url, params=None):
+        return FakeResponse({"response": {"data": {"sessions": self._sessions}}})
+
+    async def aclose(self):
+        return None
+
+
+async def test_tautulli_extras_merged_into_now_playing():
+    plex_client = FakeHttp({"MediaContainer": {"size": 1, "Metadata": [
+        {**SESSION, "Player": {"state": "playing", "title": "Pool House SHIELD",
+                               "machineIdentifier": "ph-id"}}]}})
+    tautulli = FakeTautulli([{
+        "machine_id": "ph-id", "product": "Plex for Android (TV)",
+        "quality_profile": "Original", "stream_bitrate": "18900", "bandwidth": "20000",
+        "location": "lan", "ip_address": "172.16.17.105",
+        "video_decision": "direct play", "audio_decision": "direct play",
+        "stream_container_decision": "direct play", "transcode_decision": "direct play",
+    }])
+    adapter = PlexAdapter("ph_plex", "http://10.0.0.20:32400", "tok",
+                          default_player_id="ph-id", tautulli_url="http://t", tautulli_key="k",
+                          client=plex_client, tautulli_client=tautulli)
+    np = (await adapter.get_status()).extra["now_playing"]
+    assert np["product"] == "Plex for Android (TV)"
+    assert np["quality_profile"] == "Original"
+    assert np["location"] == "LAN"
+    assert np["video_decision"] == "Direct Play"
+    assert np["bandwidth"] == 20000
+    # Plex-derived fields survive the merge.
+    assert np["title"] == "Dune: Part Two"
+
+
 async def test_no_sessions_is_none():
     adapter, _ = _adapter({"MediaContainer": {"size": 0}})
     status = await adapter.get_status()
