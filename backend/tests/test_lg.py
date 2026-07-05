@@ -127,6 +127,21 @@ async def test_picture_mode_uses_alert_luna_hack():
     await adapter.disconnect()
 
 
+async def test_picture_setting_backlight_via_luna_hack():
+    adapter, fake = await _connected()
+    await adapter.send("picture_setting", {"setting": "backlight", "value": 42})
+    alert = [m for m in fake.sent if m.get("uri", "").endswith("createAlert")][0]
+    onclose = alert["payload"]["onclose"]
+    assert onclose["uri"] == "luna://com.webos.settingsservice/setSystemSettings"
+    assert onclose["params"]["settings"] == {"backlight": 42}
+    # Out-of-range values clamp to 0-100; unknown settings are rejected.
+    result = await adapter.send("picture_setting", {"value": 250})
+    assert result == {"backlight": 100}
+    with pytest.raises(ValueError):
+        await adapter.send("picture_setting", {"setting": "gamma", "value": 5})
+    await adapter.disconnect()
+
+
 async def test_status_reports_volume_and_input():
     adapter, _ = await _connected()
     status = await adapter.get_status()
