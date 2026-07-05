@@ -55,19 +55,22 @@ function fmtTime(ms?: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
 }
 
-function Badge({ children }: { children: ReactNode }) {
-  return <span className="np-badge">{children}</span>;
-}
-
-function Detail({ label, value }: { label: string; value: ReactNode }) {
+function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="np-detail">
-      <span className="np-detail-label">{label}</span>
-      <span className="np-detail-value">{value}</span>
+    <div className="tt-row">
+      <span className="tt-row-label">{label}</span>
+      <span className="tt-row-value">{value}</span>
     </div>
   );
 }
 
+function decCodec(decision?: string, detail?: string): string | undefined {
+  if (decision && detail) return `${decision} (${detail})`;
+  return decision ?? detail ?? undefined;
+}
+
+// Tautulli-style now-playing card: poster + blurred backdrop, right-aligned
+// label rows, ratings on the poster, ETA, and inline transport controls.
 export function PlexNowPlaying({
   np,
   deviceId = "plex",
@@ -80,27 +83,22 @@ export function PlexNowPlaying({
   const show = g("grandparent_title") as string | undefined;
   const episode = g("episode") as string | undefined;
   const thumb = g("thumb") as string | undefined;
+  const art = g("art") as string | undefined;
   const dur = g("duration_ms") as number | undefined;
   const off = g("offset_ms") as number | undefined;
-  const bitrate = g("bitrate") as number | undefined;
   const resolution = g("resolution") as string | undefined;
-  const dynamicRange = g("dynamic_range") as string | undefined;
   const videoCodec = g("video_codec") as string | undefined;
   const audioCodec = g("audio_codec") as string | undefined;
   const audioCh = g("audio_channels") as number | undefined;
   const container = g("container") as string | undefined;
-  const frameRate = g("frame_rate") as string | undefined;
-  const file = g("file") as string | undefined;
-  const size = g("file_size") as number | undefined;
   const transcoding = g("transcoding") as boolean | undefined;
   const year = g("year") as number | undefined;
   const rating = g("content_rating") as string | undefined;
   const runtime = g("runtime_min") as number | undefined;
-  const genres = (g("genres") as string[] | undefined) ?? [];
   const ratings = (g("ratings") as { source: string; value: number }[] | undefined) ?? [];
-  const summary = g("summary") as string | undefined;
   // Tautulli-sourced detail (present only when Tautulli is configured).
   const product = g("product") as string | undefined;
+  const player = g("player") as string | undefined;
   const quality = g("quality_profile") as string | undefined;
   const streamBitrate = g("stream_bitrate") as number | undefined;
   const bandwidth = g("bandwidth") as number | undefined;
@@ -118,80 +116,89 @@ export function PlexNowPlaying({
   const qualityLine = quality
     ? `${quality}${streamBitrate ? ` (${(streamBitrate / 1000).toFixed(1)} Mbps)` : ""}`
     : undefined;
+  const streamVal =
+    streamDecision ?? (transcoding === undefined ? undefined : transcoding ? "Transcode" : "Direct Play");
+  const containerVal = decCodec(containerDecision, container?.toUpperCase());
+  const videoVal = decCodec(
+    videoDecision,
+    [videoCodec?.toUpperCase(), resolution].filter(Boolean).join(" ") || undefined,
+  );
+  const audioVal = decCodec(
+    audioDecision,
+    [audioCodec?.toUpperCase(), audioCh ? `${audioCh}ch` : null].filter(Boolean).join(" ") || undefined,
+  );
+  const locationVal = location ? (ip ? `${location}: ${ip}` : location) : undefined;
+  const bandwidthVal = bandwidth ? `${(bandwidth / 1000).toFixed(1)} Mbps` : undefined;
   const remaining = dur && off ? dur - off : undefined;
   const eta = remaining
     ? new Date(Date.now() + remaining).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : undefined;
 
+  const art2 = (path: string, w: number, h: number) =>
+    `/api/plex/art?path=${encodeURIComponent(path)}&w=${w}&h=${h}`;
   const cmd = (command: string) => sendCommand(deviceId, command).catch((e) => console.error(e));
 
   return (
-    <div className="nowplaying">
-      {thumb && (
-        <img className="np-art" src={`/api/plex/art?path=${encodeURIComponent(thumb)}`} alt="" />
-      )}
-      <div className="np-info">
-        <div className="np-title">{heading}</div>
-        {subheading && <div className="np-show">{subheading}</div>}
-        {metaLine && <div className="np-meta">{metaLine}</div>}
-        {genres.length > 0 && <div className="np-genres">{genres.join(" · ")}</div>}
-
-        {ratings.length > 0 && (
-          <div className="np-ratings">
-            {ratings.map((r) => (
-              <span key={r.source} className="np-rating">
-                <strong>{r.source}</strong> {r.value.toFixed(1)}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="np-badges">
-          {resolution && <Badge>{resolution.toUpperCase()}</Badge>}
-          {dynamicRange && <Badge>{dynamicRange}</Badge>}
-          {videoCodec && <Badge>{videoCodec.toUpperCase()}</Badge>}
-          {audioCodec && <Badge>{audioCodec.toUpperCase()}{audioCh ? ` ${audioCh}ch` : ""}</Badge>}
-          {container && <Badge>{container.toUpperCase()}</Badge>}
-          {frameRate && <Badge>{frameRate}</Badge>}
-          {bitrate && <Badge>{(bitrate / 1000).toFixed(1)} Mbps</Badge>}
-          <Badge>{transcoding ? "Transcode" : "Direct Play"}</Badge>
+    <div className="tt">
+      {art && <div className="tt-bg" style={{ backgroundImage: `url(${art2(art, 720, 405)})` }} />}
+      <div className="tt-scrim" />
+      <div className="tt-inner">
+        <div className="tt-poster-col">
+          {thumb && <img className="tt-poster" src={art2(thumb, 240, 360)} alt="" />}
+          {ratings.length > 0 && (
+            <div className="tt-ratings">
+              {ratings.map((r) => (
+                <span key={r.source} className="tt-rating">
+                  <strong>{r.source}</strong> {r.value.toFixed(1)}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
-        {product && (
-          <div className="np-details">
-            <Detail label="Product" value={product} />
-            {qualityLine && <Detail label="Quality" value={qualityLine} />}
-            {streamDecision && <Detail label="Stream" value={streamDecision} />}
-            {containerDecision && <Detail label="Container" value={containerDecision} />}
-            {videoDecision && <Detail label="Video" value={videoDecision} />}
-            {audioDecision && <Detail label="Audio" value={audioDecision} />}
-            {location && <Detail label="Location" value={ip ? `${location}: ${ip}` : location} />}
-            {bandwidth && <Detail label="Bandwidth" value={`${(bandwidth / 1000).toFixed(1)} Mbps`} />}
+        <div className="tt-main">
+          <div className="tt-head">
+            <div className="tt-headings">
+              <div className="tt-title">{heading}</div>
+              {subheading && <div className="tt-sub">{subheading}</div>}
+              {metaLine && <div className="tt-meta">{metaLine}</div>}
+            </div>
+            {eta && (
+              <div className="tt-eta">
+                <span className="tt-eta-label">ETA</span>
+                <strong>{eta}</strong>
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="np-progress">
-          <div className="np-bar">
-            <div className="np-bar-fill" style={{ width: `${pct}%` }} />
-          </div>
-          <div className="np-times">
-            <span>{fmtTime(off)}</span>
-            <span>{eta ? `ETA ${eta} · ` : ""}-{fmtTime(remaining ?? 0)}</span>
+          <div className="tt-rows">
+            {product && <Row label="Product" value={product} />}
+            {player && <Row label="Player" value={player} />}
+            {qualityLine && <Row label="Quality" value={qualityLine} />}
+            {streamVal && <Row label="Stream" value={streamVal} />}
+            {containerVal && <Row label="Container" value={containerVal} />}
+            {videoVal && <Row label="Video" value={videoVal} />}
+            {audioVal && <Row label="Audio" value={audioVal} />}
+            {locationVal && <Row label="Location" value={locationVal} />}
+            {bandwidthVal && <Row label="Bandwidth" value={bandwidthVal} />}
           </div>
         </div>
+      </div>
 
-        <div className="row btn-row">
-          <Btn onClick={() => cmd("play")}>▶︎ Play</Btn>
-          <Btn onClick={() => cmd("pause")}>⏸ Pause</Btn>
-          <Btn onClick={() => cmd("stop")}>⏹ Stop</Btn>
+      <div className="tt-progress">
+        <div className="tt-bar">
+          <div className="tt-bar-fill" style={{ width: `${pct}%` }} />
         </div>
+        <div className="tt-times">
+          <span>{fmtTime(off)}</span>
+          <span>-{fmtTime(remaining ?? 0)}</span>
+        </div>
+      </div>
 
-        {summary && <div className="np-summary">{summary}</div>}
-        <div className="np-foot">
-          {g("player") && <span>{g("player") as string}</span>}
-          {size && <span>{(size / 1e9).toFixed(2)} GB</span>}
-        </div>
-        {file && <div className="np-file" title={file}>{file}</div>}
+      <div className="tt-controls">
+        <Btn onClick={() => cmd("play")}>▶︎ Play</Btn>
+        <Btn onClick={() => cmd("pause")}>⏸ Pause</Btn>
+        <Btn onClick={() => cmd("stop")}>⏹ Stop</Btn>
       </div>
     </div>
   );
