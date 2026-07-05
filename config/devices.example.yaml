@@ -124,6 +124,10 @@ poolhouse:
   plex:                       # Pool House playback target on the shared server
     player_id: "REPLACE_WITH_CLIENT_IDENTIFIER"
     player_name: "Pool House SHIELD"
+  shield:                     # Nvidia Shield over ADB (non-Plex now-playing)
+    host: "192.168.1.53"
+    port: 5555                # enable "Network debugging" on the Shield
+    key_dir: "/data"          # mount a writable volume so the ADB key persists
   default_source: "shield"
 
 ac_mx_44x:

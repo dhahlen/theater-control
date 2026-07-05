@@ -136,6 +136,16 @@ class PoolHousePlexConfig(BaseModel):
     player_name: str = ""
 
 
+class ShieldConfig(BaseModel):
+    """Nvidia Shield (Android TV) reachable over ADB for non-Plex now-playing."""
+
+    host: str
+    port: int = 5555
+    # Writable directory for the persisted ADB key; mount a volume here so the
+    # on-screen authorization is not repeated after a container restart.
+    key_dir: str = "/data"
+
+
 class PoolHouseConfig(BaseModel):
     """Second room (Phase 2): reuses the adapter layer with a distinct device set.
 
@@ -147,6 +157,7 @@ class PoolHouseConfig(BaseModel):
     hue: PoolHouseHueConfig | None = None
     lg: LgConfig | None = None
     plex: PoolHousePlexConfig | None = None
+    shield: ShieldConfig | None = None
     default_source: str = ""
 
 

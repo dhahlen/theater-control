@@ -5,6 +5,8 @@ PyYAML>=6.0
 httpx>=0.27
 # webOS SSAP control for the Pool House LG G5 display (also a uvicorn[standard] dep)
 websockets>=12.0
+# ADB-over-network control for the Nvidia Shield (foreground app + media session)
+adb-shell[async]>=0.4.4
 # Proven, permissively licensed device library used directly by the JVC adapter
 # (handles the binary framing, NZ SHA256 auth, and per-model command maps).
 pyjvcprojector>=2.0

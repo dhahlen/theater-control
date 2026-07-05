@@ -150,6 +150,15 @@ class DeviceManager:
                 mac=ph.lg.mac,
                 inputs=ph.lg.inputs,
             )
+        if ph.shield:
+            from ..adapters.shield import ShieldAdapter
+
+            self._adapters["ph_shield"] = ShieldAdapter(
+                device_id="ph_shield",
+                host=ph.shield.host,
+                port=ph.shield.port,
+                key_dir=ph.shield.key_dir,
+            )
 
     # -- accessors --------------------------------------------------------
 
