@@ -1,6 +1,7 @@
 import { Btn } from "../common";
 import { MuteIcon, SourceMark, sourceLabel } from "../icons";
 import { PlexNowPlaying } from "../MediaPanel";
+import { LightSlider } from "./LightSlider";
 import type { PoolHouse } from "./live";
 
 // Room overview: a single-pane dashboard mirroring the theater layout — Room
@@ -128,14 +129,11 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
               {s.zones.map((z) => (
                 <div className="light-row" key={z.key}>
                   <span className="light-name">{z.label}</span>
-                  <input
-                    className="vol-slider light-slider"
-                    type="range"
-                    min={0}
-                    max={254}
-                    value={z.bri}
-                    disabled={!z.online}
-                    onChange={(e) => s.zoneLevel(z.id, Number(e.target.value))}
+                  <LightSlider
+                    online={z.online}
+                    on={z.on}
+                    bri={z.bri}
+                    onCommit={(v) => s.zoneLevel(z.id, v)}
                   />
                 </div>
               ))}

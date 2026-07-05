@@ -1,4 +1,5 @@
 import { Btn } from "../common";
+import { LightSlider } from "./LightSlider";
 import type { PoolHouse } from "./live";
 
 export function LightingTab({ s }: { s: PoolHouse }) {
@@ -25,14 +26,11 @@ export function LightingTab({ s }: { s: PoolHouse }) {
             </button>
           </div>
           <div className="card-label">Brightness</div>
-          <input
-            className="vol-slider"
-            type="range"
-            min={0}
-            max={254}
-            value={z.bri}
-            disabled={!z.online}
-            onChange={(e) => s.zoneLevel(z.id, Number(e.target.value))}
+          <LightSlider
+            online={z.online}
+            on={z.on}
+            bri={z.bri}
+            onCommit={(v) => s.zoneLevel(z.id, v)}
           />
           {z.scenes.length > 0 ? (
             <>
