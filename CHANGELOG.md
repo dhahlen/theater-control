@@ -4,10 +4,23 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-05
+
 ### Added
 
-- Pool House room is now live end to end (Phase 2). The backend registers the second room's devices under `ph_*` ids, reusing the adapter layer for the Trinnov Altitude 16 (`ph_trinnov`), the Office Hue bridge as one adapter per zone (`ph_hue_<zone>`), and the Pool House Plex target (`ph_plex`), plus a new LG G5 webOS adapter (`ph_lg`) over the SSAP WebSocket protocol (register/pairing with a stored client key, power off over IP and on via Wake-on-LAN, volume, mute, picture mode). New secrets `HUE_POOLHOUSE_APP_KEY` and `LG_CLIENT_KEY`, plus a `poolhouse` config block.
-- The Pool House front end now drives those real devices instead of local mock state: Room On powers the LG and sets the Altitude 16 source, Room Off powers the display off, the Trinnov tab controls volume/source/presets/upmixer live, each Hue zone (Pool House, Bar, Lounge, Office) has live brightness/scenes, and the status bar mirrors the display, source, and volume. The LG stays on HDMI 1 (fed by the Altitude 16), so source switching is on the Trinnov.
+- Pool House room, live end to end (Phase 2). The backend registers the second room's devices under `ph_*` ids, reusing the adapter layer for the Trinnov Altitude 16 (`ph_trinnov`), the Office Hue bridge as one adapter per zone (`ph_hue_<zone>`), and the Pool House Plex target (`ph_plex`), plus a new LG G5 webOS adapter (`ph_lg`) over the SSAP WebSocket protocol (pairing with a stored client key, power off over IP and on via Wake-on-LAN, volume, mute). New secrets `HUE_POOLHOUSE_APP_KEY` and `LG_CLIENT_KEY`, plus a `poolhouse` config block. A room switcher in the status bar swaps between Theater and Pool House.
+- The Pool House front end drives the real devices: Room On powers the LG and sets the Altitude 16 source, Room Off powers the display off, the Trinnov tab controls volume/source/presets/upmixer live, each Hue zone (Pool House, Bar, Lounge, Office) has live brightness/scenes, and the status bar mirrors the display, source, and volume. The LG stays on HDMI 1 (fed by the Altitude 16), so source switching is on the Trinnov.
+- Nvidia Shield now-playing over ADB (`ph_shield`): for non-Plex apps (Netflix, Prime Video, Apple TV, YouTube, etc.) the room's media card shows the foreground app and title with transport controls, read from `dumpsys media_session` and sent as media key events. Needs "Network debugging" on the Shield, a `poolhouse.shield` block, and a mounted `key_dir` for the ADB key.
+- Optional Tautulli-powered now-playing detail: when a `tautulli` block and `TAUTULLI_API_KEY` are set, the media card merges product, quality profile, per-stream direct-play/transcode decisions, location, bandwidth, and an ETA (per player) into the card, styled like Tautulli, with the show poster and blurred backdrop.
+
+### Changed
+
+- The Theater and Pool House main tabs are single-pane: the grid fills the viewport and never scrolls; only the device sub-tabs scroll. Both fit an 11-inch iPad in landscape even with the Safari URL bar showing, and the app launches fullscreen from the Home Screen.
+- Pool House lighting: sliders drag smoothly and commit on release (no polling stutter), the zone label doubles as an on/off toggle with a status dot, and each shows a live brightness percentage.
+
+### Removed
+
+- LG picture-mode control: this webOS firmware returns "404 no such service or method" for the settings call over the network, so it is set on the TV instead. Power, input, volume, and mute remain.
 
 ## [0.2.0] - 2026-07-04
 
