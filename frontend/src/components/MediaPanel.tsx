@@ -59,41 +59,6 @@ function Badge({ children }: { children: ReactNode }) {
   return <span className="np-badge">{children}</span>;
 }
 
-// Condensed now-playing for a dashboard card: art, title, and a progress bar.
-export function PlexNowPlayingCompact({ np }: { np: Record<string, unknown> }) {
-  const g = (k: string) => np[k] as never;
-  const title = (g("title") as string) ?? "";
-  const show = g("grandparent_title") as string | undefined;
-  const episode = g("episode") as string | undefined;
-  const thumb = g("thumb") as string | undefined;
-  const dur = g("duration_ms") as number | undefined;
-  const off = g("offset_ms") as number | undefined;
-  const pct = dur && off ? Math.min(100, (off / dur) * 100) : 0;
-  const heading = show ? `${show}${episode ? ` · ${episode}` : ""}` : title;
-  const sub = show ? title : episode ?? "";
-
-  return (
-    <div className="np-compact">
-      {thumb && (
-        <img className="np-compact-art" src={`/api/plex/art?path=${encodeURIComponent(thumb)}`} alt="" />
-      )}
-      <div className="np-compact-info">
-        <div className="np-compact-title">{heading}</div>
-        {sub && <div className="np-compact-sub muted">{sub}</div>}
-        <div className="np-progress">
-          <div className="np-bar">
-            <div className="np-bar-fill" style={{ width: `${pct}%` }} />
-          </div>
-          <div className="np-times">
-            <span>{fmtTime(off)}</span>
-            <span>-{fmtTime(dur && off ? dur - off : 0)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function PlexNowPlaying({
   np,
   deviceId = "plex",
