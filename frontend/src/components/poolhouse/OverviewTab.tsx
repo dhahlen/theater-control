@@ -128,11 +128,19 @@ export function OverviewTab({ s }: { s: PoolHouse }) {
             <div className="light-rows">
               {s.zones.map((z) => (
                 <div className="light-row" key={z.key}>
-                  <span className="light-name">{z.label}</span>
+                  <button
+                    className={`light-name light-toggle ${z.on ? "on" : ""}`}
+                    disabled={!z.online}
+                    onClick={() => s.zoneToggle(z.id, !z.on)}
+                    title={`Turn ${z.label} ${z.on ? "off" : "on"}`}
+                  >
+                    {z.label}
+                  </button>
                   <LightSlider
                     online={z.online}
                     on={z.on}
                     bri={z.bri}
+                    showPercent
                     onCommit={(v) => s.zoneLevel(z.id, v)}
                   />
                 </div>

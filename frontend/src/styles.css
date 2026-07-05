@@ -1152,6 +1152,46 @@ body {
   font-size: 14px;
   color: var(--muted);
 }
+/* Tappable zone label doubles as the on/off toggle in the compact card. */
+.light-toggle {
+  flex: 0 0 auto;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--muted);
+}
+.light-toggle.on {
+  color: var(--text);
+}
+.light-toggle::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: #5b6675;
+}
+.light-toggle.on::before {
+  background: var(--accent);
+}
+.light-with-pct {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.light-pct {
+  flex: 0 0 auto;
+  width: 40px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
 .light-slider {
   flex: 1;
   accent-color: var(--accent);
