@@ -4,8 +4,8 @@ import type { DeviceState } from "../../types";
 import { Btn } from "../common";
 import { MuteIcon } from "../icons";
 
-// MiniDSP SHD driving the seat transducers (bass shakers). Master level is the
-// overall shaker gain; each output row (front, rear) has its own gain and an
+// MiniDSP SHD driving the Crowson tactile transducers. Master level is the
+// overall transducer gain; each output row (front, rear) has its own gain and an
 // on/off (mute) toggle so a row can be turned down or off independently. The
 // daemon does not report per-output gain, so the row sliders track optimistically
 // and commit on release.
@@ -105,7 +105,7 @@ export function MiniDspView({ device }: { device?: DeviceState }) {
   return (
     <div className="devview">
       <div className="devview-head">
-        <h1>Bass Shakers</h1>
+        <h1>Crowson</h1>
         <span className={`pill ${online ? "pill-on" : "pill-off"}`}>{device.reachable}</span>
       </div>
 

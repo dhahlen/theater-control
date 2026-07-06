@@ -26,7 +26,7 @@ interface UiConfig {
 const ALL_TABS: TabDef[] = [
   { key: "theater", label: "Theater" },
   { key: "trinnov", label: "Trinnov", device: "trinnov" },
-  { key: "shakers", label: "Shakers", device: "minidsp" },
+  { key: "crowson", label: "Crowson", device: "minidsp" },
   { key: "madvr", label: "MadVR", device: "madvr" },
   { key: "jvc", label: "JVC", device: "jvc" },
   { key: "gamingpc", label: "Gaming PC", device: "gaming_pc" },
@@ -95,7 +95,7 @@ export function App() {
       {tab === "madvr" && <MadvrView device={devices.madvr} />}
       {tab === "jvc" && <JvcView device={devices.jvc} />}
       {tab === "gamingpc" && <GamingPcView device={devices.gaming_pc} />}
-      {tab === "shakers" && <MiniDspView device={devices.minidsp} />}
+      {tab === "crowson" && <MiniDspView device={devices.minidsp} />}
       {tab === "media" && (
         <div className="single-view">
           <MediaPanel plex={devices.plex} kaleidescape={devices.kaleidescape} />
