@@ -84,6 +84,75 @@ function RowControl({
   );
 }
 
+// Master level slider: drags smoothly and commits on release, ignoring the poll
+// while dragging so it never snaps back mid-drag (same pattern as the rows).
+function MasterLevel({
+  volume,
+  min,
+  muted,
+  cmd,
+}: {
+  volume?: number;
+  min: number;
+  muted: boolean;
+  cmd: (command: string, params?: Record<string, unknown>) => void;
+}) {
+  const initial = volume ?? min / 2;
+  const [val, setVal] = useState(initial);
+  const dragging = useRef(false);
+  const latest = useRef(initial);
+
+  useEffect(() => {
+    if (!dragging.current && volume !== undefined) {
+      setVal(volume);
+      latest.current = volume;
+    }
+  }, [volume]);
+
+  const commit = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    cmd("volume_set", { db: latest.current });
+  };
+
+  return (
+    <section className="card">
+      <div className="card-label">Master level</div>
+      <div className="vol-big">{volume !== undefined ? `${val} dB` : "—"}</div>
+      <input
+        className="vol-slider"
+        type="range"
+        min={min}
+        max={0}
+        step={0.5}
+        value={val}
+        onChange={(e) => {
+          const v = Number(e.currentTarget.value);
+          latest.current = v;
+          setVal(v);
+        }}
+        onPointerDown={() => (dragging.current = true)}
+        onPointerUp={commit}
+        onPointerCancel={commit}
+        onKeyUp={() => cmd("volume_set", { db: latest.current })}
+      />
+      <div className="row btn-row">
+        <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2</Btn>
+        <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
+        <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
+        <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2</Btn>
+        <button
+          className={`btn icon-btn ${muted ? "btn-active" : ""}`}
+          aria-label={muted ? "Unmute" : "Mute"}
+          onClick={() => cmd("mute", { state: muted ? "off" : "on" })}
+        >
+          <MuteIcon muted={muted} />
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function MiniDspView({ device }: { device?: DeviceState }) {
   if (!device) return <div className="view-empty muted">MiniDSP not configured.</div>;
   const online = device.reachable === "online";
@@ -109,32 +178,7 @@ export function MiniDspView({ device }: { device?: DeviceState }) {
         <span className={`pill ${online ? "pill-on" : "pill-off"}`}>{device.reachable}</span>
       </div>
 
-      <section className="card">
-        <div className="card-label">Master level</div>
-        <div className="vol-big">{volume !== undefined ? `${volume} dB` : "—"}</div>
-        <input
-          className="vol-slider"
-          type="range"
-          min={masterMin}
-          max={0}
-          step={0.5}
-          value={volume ?? masterMin / 2}
-          onChange={(ev) => cmd("volume_set", { db: Number(ev.target.value) })}
-        />
-        <div className="row btn-row">
-          <Btn onClick={() => cmd("volume_adjust", { delta: -2 })}>−2</Btn>
-          <Btn onClick={() => cmd("volume_adjust", { delta: -0.5 })}>−0.5</Btn>
-          <Btn onClick={() => cmd("volume_adjust", { delta: 0.5 })}>+0.5</Btn>
-          <Btn onClick={() => cmd("volume_adjust", { delta: 2 })}>+2</Btn>
-          <button
-            className={`btn icon-btn ${muted ? "btn-active" : ""}`}
-            aria-label={muted ? "Unmute" : "Mute"}
-            onClick={() => cmd("mute", { state: muted ? "off" : "on" })}
-          >
-            <MuteIcon muted={muted} />
-          </button>
-        </div>
-      </section>
+      <MasterLevel volume={volume} min={masterMin} muted={Boolean(muted)} cmd={cmd} />
 
       {rows.length === 0 ? (
         <div className="muted ph-note">No output rows configured (set minidsp.outputs).</div>
