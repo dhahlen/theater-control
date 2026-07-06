@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file. This project fo
 
 ### Added
 
-- Gaming PC telemetry tab: a read-only Gaming PC device that reads the ASUS ROG machine's sensors from Libre Hardware Monitor's web server (`http://<pc>:8085/data.json`) and shows CPU and GPU temperature, load, and power, plus memory load and every other sensor grouped by hardware. The tab appears when a `gaming_pc` block is configured, and reads offline when the PC is off. No secret is required (the local web server is unauthenticated).
+- Gaming PC telemetry tab: a read-only Gaming PC device that reads the ASUS ROG machine's sensors from Libre Hardware Monitor's web server (`http://<pc>:8085/data.json`) and shows CPU and GPU temperature (in both Celsius and Fahrenheit), load, and power, GPU memory use (VRAM used/total with a bar), plus system memory load and every other sensor grouped by hardware. The tab appears in both the Theater and Pool House when a `gaming_pc` block is configured, and reads offline when the PC is off. No secret is required (the local web server is unauthenticated).
 
 ## [0.3.1] - 2026-07-05
 

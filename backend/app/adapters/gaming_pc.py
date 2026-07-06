@@ -142,16 +142,35 @@ def _pick(
     the max of the group (``aggregate="max"``) or the first sensor found.
     """
 
+    match = _pick_full(sensors, kind, category, prefer)
+    if match is not None:
+        return match["value"]
     group = [s for s in sensors if s["kind"] == kind and s["category"] == category]
     if not group:
         return None
-    for want in prefer:
-        for s in group:
-            if want.lower() in s["name"].lower():
-                return s["value"]
     if aggregate == "max":
         return max(s["value"] for s in group)
     return group[0]["value"]
+
+
+def _pick_full(
+    sensors: list[dict[str, Any]],
+    kind: str,
+    category: str,
+    prefer: tuple[str, ...],
+) -> dict[str, Any] | None:
+    """Like ``_pick`` but returns the whole sensor (value and unit), or None.
+
+    Only the ``prefer`` names are tried; there is no aggregate/first fallback,
+    so callers that need the unit (memory sizes) get an exact match or nothing.
+    """
+
+    group = [s for s in sensors if s["kind"] == kind and s["category"] == category]
+    for want in prefer:
+        for s in group:
+            if want.lower() in s["name"].lower():
+                return s
+    return None
 
 
 def _headline(sensors: list[dict[str, Any]]) -> dict[str, Any]:
@@ -159,6 +178,10 @@ def _headline(sensors: list[dict[str, Any]]) -> dict[str, Any]:
 
     cpu_name = next((s["hardware"] for s in sensors if s["kind"] == "cpu"), None)
     gpu_name = next((s["hardware"] for s in sensors if s["kind"] == "gpu"), None)
+    # VRAM: the used/total figures carry a unit (MB or GB), so keep the sensor.
+    vram_used = _pick_full(sensors, "gpu", "Data", ("GPU Memory Used", "Memory Used"))
+    vram_total = _pick_full(sensors, "gpu", "Data", ("GPU Memory Total", "Memory Total"))
+    vram_load = _pick_full(sensors, "gpu", "Load", ("GPU Memory",))
     return {
         "cpu_name": cpu_name,
         "gpu_name": gpu_name,
@@ -172,6 +195,11 @@ def _headline(sensors: list[dict[str, Any]]) -> dict[str, Any]:
         "gpu_temp": _pick(sensors, "gpu", "Temperatures", prefer=("GPU Core", "Core", "Hot Spot")),
         "gpu_load": _pick(sensors, "gpu", "Load", prefer=("GPU Core", "Core")),
         "gpu_power": _pick(sensors, "gpu", "Powers", prefer=("GPU Package", "Package", "GPU Power")),
+        "gpu_mem_load": vram_load["value"] if vram_load else None,
+        "gpu_mem_used": vram_used["value"] if vram_used else None,
+        "gpu_mem_used_unit": vram_used["unit"] if vram_used else "",
+        "gpu_mem_total": vram_total["value"] if vram_total else None,
+        "gpu_mem_total_unit": vram_total["unit"] if vram_total else "",
         "memory_load": _pick(sensors, "memory", "Load", prefer=("Memory",)),
     }
 

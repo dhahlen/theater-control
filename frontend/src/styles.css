@@ -469,6 +469,16 @@ body {
   font-size: 18px;
   color: var(--muted);
 }
+.gpc-fahr {
+  font-size: 16px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+.gpc-val {
+  width: auto;
+  min-width: 116px;
+  font-variant-numeric: tabular-nums;
+}
 .gpc-groups {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
