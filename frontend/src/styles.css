@@ -486,7 +486,48 @@ body {
   margin-top: 12px;
 }
 .gpc-group {
-  gap: 6px;
+  gap: 0;
+}
+/* Collapsible sensor sections: header is a touch target, body reveals on open. */
+.gpc-group > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 32px;
+  user-select: none;
+}
+.gpc-group > summary::-webkit-details-marker {
+  display: none;
+}
+.gpc-group-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Chevron that rotates when the section is open. */
+.gpc-group > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.gpc-group[open] > summary::after {
+  transform: rotate(45deg);
+}
+.gpc-group[open] > summary {
+  margin-bottom: 8px;
+}
+.gpc-detail-hint {
+  font-size: 12px;
+  margin-top: 12px;
 }
 .gpc-sensor-list {
   display: flex;
