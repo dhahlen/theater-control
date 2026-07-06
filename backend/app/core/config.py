@@ -161,6 +161,19 @@ class PoolHouseConfig(BaseModel):
     default_source: str = ""
 
 
+class GamingPcConfig(BaseModel):
+    """ASUS ROG gaming PC telemetry via Libre Hardware Monitor's web server.
+
+    Libre Hardware Monitor serves its full sensor tree as JSON; the adapter polls
+    it read-only for CPU/GPU temperature, load, and power. No secret is needed
+    (the local web server is unauthenticated by default).
+    """
+
+    host: str
+    port: int = 8085
+    path: str = "/data.json"
+
+
 class SourceBehavior(BaseModel):
     """Source-specific target state applied by the Theater On routine."""
 
@@ -209,6 +222,7 @@ class AppConfig(BaseModel):
     plex: PlexConfig | None = None
     hue: HueConfig | None = None
     tautulli: TautulliConfig | None = None
+    gaming_pc: GamingPcConfig | None = None
 
     sources: dict[str, SourceBehavior] = Field(default_factory=dict)
     default_source: str = "kaleidescape"

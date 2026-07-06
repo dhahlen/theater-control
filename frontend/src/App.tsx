@@ -11,6 +11,7 @@ import { JvcPanel } from "./components/JvcPanel";
 import { TrinnovView } from "./components/views/TrinnovView";
 import { MadvrView } from "./components/views/MadvrView";
 import { JvcView } from "./components/views/JvcView";
+import { GamingPcView } from "./components/views/GamingPcView";
 import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
 import { usePoolHouse } from "./components/poolhouse/live";
 import type { Room } from "./components/RoomSwitcher";
@@ -26,6 +27,7 @@ const ALL_TABS: TabDef[] = [
   { key: "trinnov", label: "Trinnov", device: "trinnov" },
   { key: "madvr", label: "MadVR", device: "madvr" },
   { key: "jvc", label: "JVC", device: "jvc" },
+  { key: "gamingpc", label: "Gaming PC", device: "gaming_pc" },
   { key: "media", label: "Media" },
   { key: "lighting", label: "Lighting", device: "hue" },
 ];
@@ -90,6 +92,7 @@ export function App() {
       {tab === "trinnov" && <TrinnovView device={devices.trinnov} />}
       {tab === "madvr" && <MadvrView device={devices.madvr} />}
       {tab === "jvc" && <JvcView device={devices.jvc} />}
+      {tab === "gamingpc" && <GamingPcView device={devices.gaming_pc} />}
       {tab === "media" && (
         <div className="single-view">
           <MediaPanel plex={devices.plex} kaleidescape={devices.kaleidescape} />
