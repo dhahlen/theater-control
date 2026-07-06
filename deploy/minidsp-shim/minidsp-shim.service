@@ -1,0 +1,13 @@
+[Unit]
+Description=minidsp CLI HTTP shim (theater-control)
+After=network.target
+
+[Service]
+# Runs as root for USB HID access. minidspd must be stopped and disabled so the
+# minidsp CLI talks straight to USB (not through the wedging daemon socket).
+ExecStart=/usr/bin/python3 /usr/local/bin/minidsp-shim.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
