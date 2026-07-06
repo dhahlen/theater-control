@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Changed
+
+- Visual design overhaul of the web interface. The dark theme gains a soft top-lit background gradient, layered surface elevations with soft shadows, translucent hairline borders, and a brighter, more legible accent color. The status bar and toolbar carry a frosted-glass treatment, panels and cards read with clearer depth, and buttons, source chips, media tabs, and the remote keys have gradient fills with distinct hover, active, and pressed states. Status dots and the live indicator glow, and the Theater On and Theater Off scene buttons carry richer gradients. The change is styling only, so every control, layout, and device panel behaves exactly as before and the interface still fits an 11-inch iPad in landscape without scrolling.
+
 ### Added
 
 - MiniDSP SHD control for the seat Crowson tactile transducers, on a Crowson tab. Control is through the minidsp-rs daemon (`minidspd`) running on the host with the SHD on USB, reached over its HTTP API. The tab gives a master level (volume/mute) plus a per-row gain slider and on/off toggle for each output row (front on XLR Out 1, rear on XLR Out 2), so either row can be turned down or off independently. The daemon reports master volume/mute; per-output gain is tracked optimistically. Configured with a `minidsp` block mapping row names to the SHD's 0-based output channels; no secret required.
