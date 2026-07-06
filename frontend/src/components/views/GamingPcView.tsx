@@ -205,10 +205,14 @@ export function GamingPcView({ device }: { device?: DeviceState }) {
             </section>
           </div>
 
+          <div className="gpc-detail-hint muted">Tap a section for the full sensor list.</div>
           <div className="gpc-groups">
             {groups.map((g) => (
-              <section className="card gpc-group" key={g.hardware}>
-                <div className="card-label">{g.hardware}</div>
+              <details className="card gpc-group" key={g.hardware}>
+                <summary className="gpc-group-head">
+                  <span className="card-label">{g.hardware}</span>
+                  <span className="gpc-group-count">{g.sensors.length}</span>
+                </summary>
                 <div className="gpc-sensor-list">
                   {g.sensors.map((srow, i) => {
                     const val = Number.isInteger(srow.value) ? `${srow.value}` : srow.value.toFixed(1);
@@ -225,7 +229,7 @@ export function GamingPcView({ device }: { device?: DeviceState }) {
                     );
                   })}
                 </div>
-              </section>
+              </details>
             ))}
           </div>
         </>
