@@ -42,7 +42,13 @@ SAMPLE = {
                             ],
                         },
                         {"Text": "Powers", "Children": [{"Text": "GPU Package", "Value": "95.5 W"}]},
-                        {"Text": "Data", "Children": [{"Text": "GPU Memory Used", "Value": "3.2 GB"}]},
+                        {
+                            "Text": "Data",
+                            "Children": [
+                                {"Text": "GPU Memory Used", "Value": "5734 MB"},
+                                {"Text": "GPU Memory Total", "Value": "24564 MB"},
+                            ],
+                        },
                     ],
                 },
                 {
@@ -121,6 +127,11 @@ async def test_headline_cpu_gpu_figures():
     assert e["gpu_temp"] == 41.0
     assert e["gpu_load"] == 4.0  # GPU Core load, not GPU Memory load
     assert e["gpu_power"] == 95.5
+    assert e["gpu_mem_load"] == 18.0  # GPU Memory load %, distinct from GPU Core
+    assert e["gpu_mem_used"] == 5734.0
+    assert e["gpu_mem_used_unit"] == "MB"
+    assert e["gpu_mem_total"] == 24564.0
+    assert e["gpu_mem_total_unit"] == "MB"
     assert e["memory_load"] == 34.7
 
 
