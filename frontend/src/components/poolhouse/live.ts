@@ -33,6 +33,9 @@ export interface PoolHouse {
   trinnov?: DeviceState;
   plex?: DeviceState;
   shield?: DeviceState;
+  // The gaming PC is one physical machine shared with the theater; its telemetry
+  // tab appears in both rooms when configured.
+  gamingPc?: DeviceState;
   // Shield now-playing for non-Plex apps (Netflix, Prime, etc.).
   shieldApp?: string;
   shieldTitle?: string;
@@ -89,6 +92,7 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
   const trinnov = devices["ph_trinnov"];
   const plex = devices["ph_plex"];
   const shield = devices["ph_shield"];
+  const gamingPc = devices["gaming_pc"];
   const te = trinnov?.extra ?? {};
   const she = shield?.extra ?? {};
   const shieldApp = she.app_name as string | undefined;
@@ -133,6 +137,7 @@ export function usePoolHouse(devices: DeviceMap): PoolHouse {
     trinnov,
     plex,
     shield,
+    gamingPc,
     shieldApp,
     shieldTitle,
     shieldSubtitle: she.subtitle as string | undefined,
