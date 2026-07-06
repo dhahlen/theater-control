@@ -102,6 +102,19 @@ class DeviceManager:
                 port=cfg.gaming_pc.port,
                 path=cfg.gaming_pc.path,
             )
+        if cfg.minidsp:
+            from ..adapters.minidsp import MiniDspAdapter
+
+            self._adapters["minidsp"] = MiniDspAdapter(
+                device_id="minidsp",
+                host=cfg.minidsp.host,
+                port=cfg.minidsp.port,
+                device_index=cfg.minidsp.device_index,
+                outputs=cfg.minidsp.outputs,
+                master_min_db=cfg.minidsp.master_min_db,
+                output_min_db=cfg.minidsp.output_min_db,
+                output_max_db=cfg.minidsp.output_max_db,
+            )
 
         self._build_poolhouse_adapters()
 

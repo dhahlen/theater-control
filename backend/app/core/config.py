@@ -174,6 +174,24 @@ class GamingPcConfig(BaseModel):
     path: str = "/data.json"
 
 
+class MiniDspConfig(BaseModel):
+    """MiniDSP SHD driving the seat transducers (bass shakers).
+
+    Control goes through the minidsp-rs daemon (``minidspd``), which runs on the
+    host with the SHD on USB and exposes an HTTP API. ``outputs`` maps friendly
+    row names to the SHD's 0-based output channels (front on XLR Out 1, rear on
+    XLR Out 2 in this theater).
+    """
+
+    host: str = "127.0.0.1"
+    port: int = 5380
+    device_index: int = 0
+    outputs: dict[str, int] = Field(default_factory=dict)
+    master_min_db: float = -80.0
+    output_min_db: float = -40.0
+    output_max_db: float = 0.0
+
+
 class SourceBehavior(BaseModel):
     """Source-specific target state applied by the Theater On routine."""
 
@@ -223,6 +241,7 @@ class AppConfig(BaseModel):
     hue: HueConfig | None = None
     tautulli: TautulliConfig | None = None
     gaming_pc: GamingPcConfig | None = None
+    minidsp: MiniDspConfig | None = None
 
     sources: dict[str, SourceBehavior] = Field(default_factory=dict)
     default_source: str = "kaleidescape"
