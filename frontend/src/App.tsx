@@ -12,6 +12,7 @@ import { TrinnovView } from "./components/views/TrinnovView";
 import { MadvrView } from "./components/views/MadvrView";
 import { JvcView } from "./components/views/JvcView";
 import { GamingPcView } from "./components/views/GamingPcView";
+import { MiniDspView } from "./components/views/MiniDspView";
 import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
 import { usePoolHouse } from "./components/poolhouse/live";
 import type { Room } from "./components/RoomSwitcher";
@@ -25,6 +26,7 @@ interface UiConfig {
 const ALL_TABS: TabDef[] = [
   { key: "theater", label: "Theater" },
   { key: "trinnov", label: "Trinnov", device: "trinnov" },
+  { key: "shakers", label: "Shakers", device: "minidsp" },
   { key: "madvr", label: "MadVR", device: "madvr" },
   { key: "jvc", label: "JVC", device: "jvc" },
   { key: "gamingpc", label: "Gaming PC", device: "gaming_pc" },
@@ -93,6 +95,7 @@ export function App() {
       {tab === "madvr" && <MadvrView device={devices.madvr} />}
       {tab === "jvc" && <JvcView device={devices.jvc} />}
       {tab === "gamingpc" && <GamingPcView device={devices.gaming_pc} />}
+      {tab === "shakers" && <MiniDspView device={devices.minidsp} />}
       {tab === "media" && (
         <div className="single-view">
           <MediaPanel plex={devices.plex} kaleidescape={devices.kaleidescape} />

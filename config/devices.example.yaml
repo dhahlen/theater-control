@@ -75,6 +75,21 @@ gaming_pc:
   port: 8085
   path: "/data.json"
 
+# Optional MiniDSP SHD driving the seat transducers (bass shakers). Control is
+# through the minidsp-rs daemon (minidspd) running on the host with the SHD on
+# USB; it exposes an HTTP API (default 127.0.0.1:5380). Map friendly row names to
+# the SHD's 0-based output channels.
+minidsp:
+  host: "127.0.0.1"
+  port: 5380
+  device_index: 0
+  outputs:
+    front_row: 0        # XLR Out 1
+    rear_row: 1         # XLR Out 2
+  master_min_db: -80.0  # UI slider floor for the master level
+  output_min_db: -40.0  # UI slider floor for a row's gain
+  output_max_db: 0.0
+
 # ---- Source-specific behavior for Theater On ----
 
 sources:
