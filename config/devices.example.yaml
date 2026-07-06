@@ -66,6 +66,15 @@ tautulli:
   base_url: "http://192.168.1.20:8181"
   # API key provided via TAUTULLI_API_KEY in .env
 
+# Optional gaming PC telemetry (read-only), via Libre Hardware Monitor. Install
+# Libre Hardware Monitor on the PC, and under Options enable "Run web server"
+# (default port 8085). The adapter polls its JSON tree for CPU/GPU temperature,
+# load, and power and surfaces them on a Gaming PC tab.
+gaming_pc:
+  host: "192.168.1.60"
+  port: 8085
+  path: "/data.json"
+
 # ---- Source-specific behavior for Theater On ----
 
 sources:

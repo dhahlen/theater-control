@@ -93,6 +93,15 @@ class DeviceManager:
                 tautulli_url=cfg.tautulli.base_url if cfg.tautulli else "",
                 tautulli_key=cfg.secrets.tautulli_api_key or "",
             )
+        if cfg.gaming_pc:
+            from ..adapters.gaming_pc import GamingPcAdapter
+
+            self._adapters["gaming_pc"] = GamingPcAdapter(
+                device_id="gaming_pc",
+                host=cfg.gaming_pc.host,
+                port=cfg.gaming_pc.port,
+                path=cfg.gaming_pc.path,
+            )
 
         self._build_poolhouse_adapters()
 
