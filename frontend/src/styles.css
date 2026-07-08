@@ -341,8 +341,20 @@ body {
 .row-name {
   font-weight: 600;
 }
-.row-toggle .btn {
-  min-width: 84px;
+/* Fixed width + no grow so both row buttons are identical and right-aligned. */
+.row-btn {
+  flex: 0 0 auto;
+  width: 96px;
+  border-width: 2px;
+  font-weight: 600;
+}
+.row-on {
+  border-color: var(--on);
+  color: var(--on);
+}
+.row-off {
+  border-color: var(--off);
+  color: var(--off);
 }
 .err-boundary {
   display: flex;

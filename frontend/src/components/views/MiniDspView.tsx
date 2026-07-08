@@ -139,7 +139,7 @@ export function MiniDspView({ device }: { device?: DeviceState }) {
               <div className="row btn-row row-toggle" key={name}>
                 <span className="row-name">{label(name)}</span>
                 <button
-                  className={`btn ${off ? "" : "btn-active"}`}
+                  className={`btn row-btn ${off ? "row-off" : "row-on"}`}
                   onClick={() => cmd("output_mute", { index, state: off ? "off" : "on" })}
                 >
                   {off ? "Off" : "On"}
