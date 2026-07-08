@@ -7,10 +7,15 @@ reliable. This shim serves the subset of the minidsp-rs HTTP API that the
 theater-control adapter uses by shelling out to the CLI per request, so the
 device is opened, read, and closed each time (the pattern that works).
 
+Each CLI invocation opens the USB HID, so bursts (a command, then the app's
+status poll, then a manual read) can briefly overwhelm the SHD. To keep the
+churn down, status reads are cached for a couple seconds and a command applies
+without an inline re-read (the next poll refreshes). All CLI access is
+serialized behind one lock.
+
 It listens on the same address the daemon used (127.0.0.1:5380), so
-theater-control needs no change: point the `minidsp` config block at this host
-and port as before. Run it as root (USB HID access) via systemd, with minidspd
-stopped and disabled so the CLI talks straight to USB.
+theater-control needs no change. Run as root (USB HID access) via systemd, with
+minidspd stopped and disabled so the CLI talks straight to USB.
 
 Endpoints:
   GET  /devices            -> [ { url, product_name } ]              (presence)
@@ -26,14 +31,17 @@ import json
 import re
 import subprocess
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 MINIDSP = "/usr/local/bin/minidsp"
 BIND = ("127.0.0.1", 5380)
 CLI_TIMEOUT = 8.0
+CACHE_TTL = 2.5  # seconds a status read is reused before hitting the device again
 
 # Serialize all CLI access: one `minidsp` process touches the USB HID at a time.
 _lock = threading.Lock()
+_cache: dict[str, object] = {"at": 0.0, "data": None}
 
 _STATUS_RE = re.compile(
     r"preset:\s*(\d+).*?source:\s*(\w+).*?volume:\s*Gain\(([-\d.]+)\).*?mute:\s*(true|false)",
@@ -48,7 +56,7 @@ def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
     )
 
 
-def read_status() -> dict:
+def _read_status() -> dict:
     result = _run([])
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or "minidsp CLI failed")
@@ -73,18 +81,34 @@ def read_status() -> dict:
     }
 
 
+def read_status_cached() -> dict:
+    """Return status, reusing a recent read to avoid opening the USB repeatedly."""
+    with _lock:
+        now = time.monotonic()
+        cached = _cache["data"]
+        if cached is not None and now - float(_cache["at"]) < CACHE_TTL:
+            return cached  # type: ignore[return-value]
+        data = _read_status()
+        _cache["data"] = data
+        _cache["at"] = now
+        return data
+
+
 def apply_config(body: dict) -> None:
-    master = body.get("master_status") or {}
-    if "volume" in master:
-        _run(["gain", "--", str(float(master["volume"]))])
-    if "mute" in master:
-        _run(["mute", "on" if master["mute"] else "off"])
-    for output in body.get("outputs") or []:
-        index = int(output["index"])
-        if "gain" in output:
-            _run(["output", str(index), "gain", "--", str(float(output["gain"]))])
-        if "mute" in output:
-            _run(["output", str(index), "mute", "on" if output["mute"] else "off"])
+    """Run the CLI for each requested change, then invalidate the status cache."""
+    with _lock:
+        master = body.get("master_status") or {}
+        if "volume" in master:
+            _run(["gain", "--", str(float(master["volume"]))])
+        if "mute" in master:
+            _run(["mute", "on" if master["mute"] else "off"])
+        for output in body.get("outputs") or []:
+            index = int(output["index"])
+            if "gain" in output:
+                _run(["output", str(index), "gain", "--", str(float(output["gain"]))])
+            if "mute" in output:
+                _run(["output", str(index), "mute", "on" if output["mute"] else "off"])
+        _cache["at"] = 0.0  # next status read reflects the change
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -103,8 +127,7 @@ class Handler(BaseHTTPRequestHandler):
         if path != "/devices/0":
             return self._send(404, {"error": "not found"})
         try:
-            with _lock:
-                self._send(200, read_status())
+            self._send(200, read_status_cached())
         except Exception as exc:  # daemon-style: report unreachable, do not crash
             self._send(503, {"error": str(exc)})
 
@@ -114,10 +137,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", 0))
             body = json.loads(self.rfile.read(length) or b"{}")
-            with _lock:
-                apply_config(body)
-                status = read_status()
-            self._send(200, status)
+            apply_config(body)
+            self._send(200, {"ok": True})
         except Exception as exc:
             self._send(503, {"error": str(exc)})
 
