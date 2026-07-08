@@ -111,6 +111,7 @@ class DeviceManager:
                 port=cfg.minidsp.port,
                 device_index=cfg.minidsp.device_index,
                 outputs=cfg.minidsp.outputs,
+                presets=cfg.minidsp.presets,
                 master_min_db=cfg.minidsp.master_min_db,
                 output_min_db=cfg.minidsp.output_min_db,
                 output_max_db=cfg.minidsp.output_max_db,

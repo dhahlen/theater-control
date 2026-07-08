@@ -39,6 +39,7 @@ class MiniDspAdapter(DeviceAdapter):
         port: int = 5380,
         device_index: int = 0,
         outputs: dict[str, int] | None = None,
+        presets: list[str] | None = None,
         master_min_db: float = -80.0,
         output_min_db: float = -40.0,
         output_max_db: float = 0.0,
@@ -49,6 +50,7 @@ class MiniDspAdapter(DeviceAdapter):
         self._port = port
         self._index = device_index
         self._outputs = dict(outputs or {})
+        self._presets = list(presets or [])
         self._master_min = master_min_db
         self._output_min = output_min_db
         self._output_max = output_max_db
@@ -105,6 +107,7 @@ class MiniDspAdapter(DeviceAdapter):
             "mute": self._mute,
             "source": master.get("source"),
             "preset": master.get("preset"),
+            "presets": self._presets,
             "sources": data.get("available_sources", []),
             "output_levels": data.get("output_levels", []),
             "outputs": self._outputs,

@@ -86,6 +86,11 @@ minidsp:
   outputs:
     front_row: 0        # XLR Out 1
     rear_row: 1         # XLR Out 2
+  presets:              # optional labels for the device's config presets (0-based)
+    - "10 Hz · +9"
+    - "20 Hz · +6"
+    - "30 Hz · +4"
+    - "10 Hz · +10.5"
   master_min_db: -80.0  # UI slider floor for the master level
   output_min_db: -40.0  # UI slider floor for a row's gain
   output_max_db: 0.0

@@ -187,6 +187,9 @@ class MiniDspConfig(BaseModel):
     port: int = 5380
     device_index: int = 0
     outputs: dict[str, int] = Field(default_factory=dict)
+    # Optional labels for the device's config presets, in order (0-based). Empty
+    # falls back to "Preset 1".."Preset N" in the UI.
+    presets: list[str] = Field(default_factory=list)
     master_min_db: float = -80.0
     output_min_db: float = -40.0
     output_max_db: float = 0.0
