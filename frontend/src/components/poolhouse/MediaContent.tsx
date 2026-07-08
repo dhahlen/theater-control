@@ -1,4 +1,5 @@
 import { Btn } from "../common";
+import { ErrorBoundary } from "../ErrorBoundary";
 import { PlexNowPlaying } from "../MediaPanel";
 import type { PoolHouse } from "./live";
 
@@ -7,7 +8,12 @@ import type { PoolHouse } from "./live";
 // Apple TV, etc.) via ADB, otherwise an idle state.
 export function MediaContent({ s }: { s: PoolHouse }) {
   const np = s.plex?.extra?.now_playing as Record<string, unknown> | undefined;
-  if (np) return <PlexNowPlaying np={np} deviceId="ph_plex" />;
+  if (np)
+    return (
+      <ErrorBoundary label="Media card unavailable">
+        <PlexNowPlaying np={np} deviceId="ph_plex" />
+      </ErrorBoundary>
+    );
   if (s.shieldActive) return <ShieldNowPlaying s={s} />;
   return (
     <div className="np-idle">
