@@ -15,6 +15,7 @@ import { GamingPcView } from "./components/views/GamingPcView";
 import { MiniDspView } from "./components/views/MiniDspView";
 import { PoolHouseRoom } from "./components/poolhouse/PoolHouseRoom";
 import { usePoolHouse } from "./components/poolhouse/live";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import type { Room } from "./components/RoomSwitcher";
 
 interface UiConfig {
@@ -59,7 +60,9 @@ export function App() {
     return (
       <div className="app">
         <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} ph={ph} />
-        <PoolHouseRoom s={ph} />
+        <ErrorBoundary label="Pool House view error">
+          <PoolHouseRoom s={ph} />
+        </ErrorBoundary>
       </div>
     );
   }
@@ -69,6 +72,7 @@ export function App() {
       <StatusBar devices={devices} connected={connected} room={room} onRoomChange={setRoom} ph={ph} />
       <Toolbar tabs={tabs} active={tab} onSelect={setTab} devices={devices} />
 
+      <ErrorBoundary label="View error">
       {tab === "theater" && (
         <>
           <SceneBar
@@ -106,6 +110,7 @@ export function App() {
           <LightingPanel device={devices.hue} />
         </div>
       )}
+      </ErrorBoundary>
     </div>
   );
 }
