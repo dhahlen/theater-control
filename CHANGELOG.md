@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Fixed
+
+- The app no longer blanks out when Plex starts playing. Plex returns rating values as strings, and the now-playing card called `.toFixed()` on them, which threw and (with no error boundary) took down the whole page. Rating values are now normalized to numbers in the backend and coerced defensively in the card, and the Plex now-playing card is wrapped in an error boundary in both rooms so any unexpected field degrades to a small "media card unavailable" fallback instead of a blank screen.
+
 ### Added
 
 - MiniDSP SHD control for the seat Crowson tactile transducers, on a Crowson tab. Control is through the minidsp-rs daemon (`minidspd`) running on the host with the SHD on USB, reached over its HTTP API. The tab gives a master level (volume/mute) plus a per-row gain slider and on/off toggle for each output row (front on XLR Out 1, rear on XLR Out 2), so either row can be turned down or off independently. The daemon reports master volume/mute; per-output gain is tracked optimistically. Configured with a `minidsp` block mapping row names to the SHD's 0-based output channels; no secret required.

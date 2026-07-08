@@ -315,8 +315,13 @@ def _parse_ratings(meta: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for rating in meta.get("Rating") or []:
         image = str(rating.get("image", ""))
-        value = rating.get("value")
         source = next((label for key, label in sources.items() if key in image), None)
+        # Plex reports rating values as strings ("8.6"); normalize to float so the
+        # UI never gets a non-numeric value.
+        try:
+            value = float(rating.get("value"))
+        except (TypeError, ValueError):
+            value = None
         if source and value is not None:
             out.append({"source": source, "value": value})
     return out

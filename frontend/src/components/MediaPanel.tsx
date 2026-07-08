@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { sendCommand } from "../api";
 import type { DeviceState } from "../types";
 import { Btn } from "./common";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 // Kaleidescape transport remote. Buttons map to the adapter capability names.
 function KaleidescapeRemote({ device }: { device: DeviceState }) {
@@ -147,11 +148,14 @@ export function PlexNowPlaying({
           {thumb && <img className="tt-poster" src={art2(thumb, 240, 360)} alt="" />}
           {ratings.length > 0 && (
             <div className="tt-ratings">
-              {ratings.map((r) => (
-                <span key={r.source} className="tt-rating">
-                  <strong>{r.source}</strong> {r.value.toFixed(1)}
-                </span>
-              ))}
+              {ratings.map((r) => {
+                const v = Number(r.value);
+                return (
+                  <span key={r.source} className="tt-rating">
+                    <strong>{r.source}</strong> {Number.isFinite(v) ? v.toFixed(1) : "—"}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
@@ -232,7 +236,9 @@ export function MediaPanel({
       <div className="panel-body">
         {tab === "Plex" && plex && (
           plex.extra?.now_playing ? (
-            <PlexNowPlaying np={plex.extra.now_playing as Record<string, unknown>} />
+            <ErrorBoundary label="Media card unavailable">
+              <PlexNowPlaying np={plex.extra.now_playing as Record<string, unknown>} />
+            </ErrorBoundary>
           ) : (
             <div className="np-idle">
               <div className="np-idle-title">Nothing playing</div>
