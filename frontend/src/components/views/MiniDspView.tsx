@@ -4,88 +4,19 @@ import type { DeviceState } from "../../types";
 import { Btn } from "../common";
 import { MuteIcon } from "../icons";
 
-// MiniDSP SHD driving the Crowson tactile transducers. Master level is the
-// overall transducer gain; each output row (front, rear) has its own gain and an
-// on/off (mute) toggle so a row can be turned down or off independently. The
-// daemon does not report per-output gain, so the row sliders track optimistically
-// and commit on release.
+// MiniDSP SHD driving the Crowson tactile transducers. The tab exposes the
+// master level, the device's config presets (each a gain/crossover profile), and
+// an on/off toggle per output row (front = out 1, rear = out 2). Per-output gain
+// is set on the device presets, not from here. The SHD does not report per-output
+// mute over the CLI, so the row On/Off is tracked optimistically; the master level
+// and active preset are read back from the device.
 
 function label(name: string): string {
   return name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function RowControl({
-  name,
-  index,
-  gain,
-  muted,
-  min,
-  max,
-  cmd,
-}: {
-  name: string;
-  index: number;
-  gain: number | null;
-  muted: boolean;
-  min: number;
-  max: number;
-  cmd: (command: string, params?: Record<string, unknown>) => void;
-}) {
-  const initial = gain ?? max;
-  const [val, setVal] = useState(initial);
-  const dragging = useRef(false);
-  const latest = useRef(initial);
-
-  useEffect(() => {
-    if (!dragging.current && gain !== null) {
-      setVal(gain);
-      latest.current = gain;
-    }
-  }, [gain]);
-
-  const commit = () => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    cmd("output_gain", { index, db: latest.current });
-  };
-
-  return (
-    <section className="card">
-      <div className="card-head">
-        <h2>{label(name)}</h2>
-        <button
-          className={`btn ${muted ? "" : "btn-active"}`}
-          onClick={() => cmd("output_mute", { index, state: muted ? "off" : "on" })}
-        >
-          {muted ? "Off" : "On"}
-        </button>
-      </div>
-      <div className="row light-with-pct">
-        <input
-          className={`vol-slider ${muted ? "slider-off" : ""}`}
-          type="range"
-          min={min}
-          max={max}
-          step={0.5}
-          value={val}
-          onChange={(e) => {
-            const v = Number(e.currentTarget.value);
-            latest.current = v;
-            setVal(v);
-          }}
-          onPointerDown={() => (dragging.current = true)}
-          onPointerUp={commit}
-          onPointerCancel={commit}
-          onKeyUp={() => cmd("output_gain", { index, db: latest.current })}
-        />
-        <span className="light-pct">{val.toFixed(1)} dB</span>
-      </div>
-    </section>
-  );
-}
-
 // Master level slider: drags smoothly and commits on release, ignoring the poll
-// while dragging so it never snaps back mid-drag (same pattern as the rows).
+// while dragging so it never snaps back mid-drag.
 function MasterLevel({
   volume,
   min,
@@ -159,17 +90,21 @@ export function MiniDspView({ device }: { device?: DeviceState }) {
   const e = device.extra ?? {};
   const volume = e.volume as number | undefined;
   const muted = e.mute as boolean | undefined;
+  const preset = e.preset as number | undefined;
+  const presetLabels = (e.presets as string[]) ?? [];
   const outputs = (e.outputs as Record<string, number>) ?? {};
-  const gains = (e.output_gain as Record<string, number | null>) ?? {};
   const mutes = (e.output_mute as Record<string, boolean>) ?? {};
   const masterMin = (e.master_min as number) ?? -80;
-  const outMin = (e.output_min as number) ?? -40;
-  const outMax = (e.output_max as number) ?? 0;
 
   const cmd = (command: string, params?: Record<string, unknown>) =>
     sendCommand("minidsp", command, params).catch((err) => console.error(err));
 
   const rows = Object.entries(outputs).sort((a, b) => a[1] - b[1]);
+  // Fall back to four generically-labelled presets if none are configured.
+  const presets =
+    presetLabels.length > 0
+      ? presetLabels
+      : ["Preset 1", "Preset 2", "Preset 3", "Preset 4"];
 
   return (
     <div className="devview">
@@ -180,21 +115,39 @@ export function MiniDspView({ device }: { device?: DeviceState }) {
 
       <MasterLevel volume={volume} min={masterMin} muted={Boolean(muted)} cmd={cmd} />
 
-      {rows.length === 0 ? (
-        <div className="muted ph-note">No output rows configured (set minidsp.outputs).</div>
-      ) : (
-        rows.map(([name, index]) => (
-          <RowControl
-            key={name}
-            name={name}
-            index={index}
-            gain={gains[name] ?? null}
-            muted={Boolean(mutes[name])}
-            min={outMin}
-            max={outMax}
-            cmd={cmd}
-          />
-        ))
+      <section className="card">
+        <div className="card-label">Preset</div>
+        <div className="mode-grid">
+          {presets.map((name, index) => (
+            <button
+              key={index}
+              className={`btn mode-btn ${preset === index ? "btn-active" : ""}`}
+              onClick={() => cmd("preset", { index })}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {rows.length > 0 && (
+        <section className="card">
+          <div className="card-label">Rows</div>
+          {rows.map(([name, index]) => {
+            const off = Boolean(mutes[name]);
+            return (
+              <div className="row btn-row row-toggle" key={name}>
+                <span className="row-name">{label(name)}</span>
+                <button
+                  className={`btn ${off ? "" : "btn-active"}`}
+                  onClick={() => cmd("output_mute", { index, state: off ? "off" : "on" })}
+                >
+                  {off ? "Off" : "On"}
+                </button>
+              </div>
+            );
+          })}
+        </section>
       )}
     </div>
   );

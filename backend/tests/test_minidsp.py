@@ -53,6 +53,7 @@ def _adapter(client: FakeClient | None = None) -> MiniDspAdapter:
     return MiniDspAdapter(
         "minidsp",
         outputs={"front_row": 0, "rear_row": 1},
+        presets=["Deep", "Full"],
         client=client or FakeClient(),
     )
 
@@ -65,6 +66,15 @@ async def test_status_reports_master_and_outputs():
     assert status.extra["mute"] is False
     assert status.extra["output_levels"] == [-57.1, -60.7, -120.0, -120.0]
     assert status.extra["outputs"] == {"front_row": 0, "rear_row": 1}
+    assert status.extra["preset"] == 0
+    assert status.extra["presets"] == ["Deep", "Full"]
+
+
+async def test_preset_switches_config():
+    client = FakeClient()
+    adapter = _adapter(client)
+    await adapter.send("preset", {"index": 2})
+    assert client.posts[-1] == ("/devices/0/config", {"master_status": {"preset": 2}})
 
 
 async def test_volume_set_clamps_and_posts_master():

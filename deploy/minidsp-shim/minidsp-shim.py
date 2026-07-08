@@ -98,6 +98,12 @@ def apply_config(body: dict) -> None:
     """Run the CLI for each requested change, then invalidate the status cache."""
     with _lock:
         master = body.get("master_status") or {}
+        # Preset (config) first, then source, then master level, matching the
+        # minidsp-rs ordering (master_status is applied before other settings).
+        if "preset" in master:
+            _run(["config", str(int(master["preset"]))])
+        if "source" in master:
+            _run(["source", str(master["source"])])
         if "volume" in master:
             _run(["gain", "--", str(float(master["volume"]))])
         if "mute" in master:

@@ -334,6 +334,16 @@ body {
   padding: 40px;
   text-align: center;
 }
+.row-toggle {
+  align-items: center;
+  justify-content: space-between;
+}
+.row-name {
+  font-weight: 600;
+}
+.row-toggle .btn {
+  min-width: 84px;
+}
 .err-boundary {
   display: flex;
   flex-direction: column;
