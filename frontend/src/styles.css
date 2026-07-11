@@ -1440,3 +1440,87 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Phone layout (iPhone). Only fires below 640px, so the 11-inch iPad
+   (834px portrait / 1194px landscape) keeps its single-pane landscape layout.
+   The phone stacks everything into one scrollable column. ---- */
+@media (max-width: 640px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+  }
+  body {
+    overflow-y: auto;
+  }
+  .app {
+    height: auto;
+    min-height: 100%;
+    max-width: 100%;
+  }
+
+  /* Content regions size to their content and the page scrolls, instead of the
+     iPad's fixed-height single pane with internal scrolling. */
+  .grid,
+  .single-view,
+  .devview {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .grid > .panel,
+  .grid > .card,
+  .grid-col > .panel,
+  .grid-col > .card {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+  .panel,
+  .panel-body {
+    overflow: visible;
+  }
+  .devview,
+  .devview-wide {
+    max-width: 100%;
+  }
+
+  /* Status bar wraps onto two rows; readouts drop below the brand. */
+  .statusbar {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 8px 12px;
+  }
+  .status-items {
+    margin-left: 0;
+    width: 100%;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* Scene bar and MadVR view stack; the remote is no longer sticky. */
+  .scenebar {
+    grid-template-columns: 1fr;
+  }
+  .madvr-layout {
+    grid-template-columns: 1fr;
+  }
+  .madvr-remote {
+    position: static;
+  }
+
+  /* A little more room for the media card's text on a narrow screen. */
+  .tt-poster-col,
+  .tt-poster {
+    width: 96px;
+  }
+  .tool-tab {
+    padding: 0 13px;
+    font-size: 14px;
+  }
+}

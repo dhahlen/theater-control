@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file. This project fo
 
 ## [Unreleased]
 
+### Added
+
+- Phone layout. Below 640px (iPhone), the interface stacks into a single scrollable column: the dashboard grid, scene bar, and MadVR view collapse to one column, the status bar wraps, and content scrolls the page instead of the iPad's fixed single pane. The 11-inch iPad landscape layout is unchanged (the breakpoint never fires above 640px).
+
 ### Fixed
 
 - The app no longer blanks out when Plex starts playing. Plex returns rating values as strings, and the now-playing card called `.toFixed()` on them, which threw and (with no error boundary) took down the whole page. Rating values are now normalized to numbers in the backend and coerced defensively in the card, and the Plex now-playing card is wrapped in an error boundary in both rooms so any unexpected field degrades to a small "media card unavailable" fallback instead of a blank screen.
